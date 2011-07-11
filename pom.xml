@@ -86,12 +86,12 @@
         <url>https://github.com/geosolutions-it/geonetwork-manager</url>
     </scm>
 
-<!--
+
     <ciManagement>
         <system>jenkins</system>    
         <url>http://ci.geo-solutions.it/</url>
     </ciManagement>
--->    
+
     <distributionManagement>
         <downloadUrl>http://maven.geo-solutions.it</downloadUrl>
         <repository>
@@ -101,7 +101,7 @@
         </repository>
         <site>
             <id>demo.geosolutions</id>
-            <url>scp://demo.geo-solutions.it/var/www/share/javadoc/gsman</url>
+            <url>scp://demo.geo-solutions.it/var/www/share/javadoc/gnman</url>
         </site>
     </distributionManagement>
 
