@@ -1,0 +1,14 @@
+##
+## This file has been automatically generated with the createGitIgnore script.
+## Please don't modify it directly, or your changes may be overwritten.
+##
+## - ETj
+
+nb*.xml
+.classpath
+.project
+.settings
+# ./
+
+./target
+
