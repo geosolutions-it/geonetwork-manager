@@ -27,6 +27,7 @@ package it.geosolutions.geonetwork.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
@@ -48,6 +49,8 @@ import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.jdom.Document;
+import org.jdom.input.SAXBuilder;
 
 /**
  * Low level HTTP utilities.
@@ -322,18 +325,25 @@ public class HTTPUtils {
 				case HttpURLConnection.HTTP_OK:
 				case HttpURLConnection.HTTP_CREATED:
 				case HttpURLConnection.HTTP_ACCEPTED:
-					LOGGER.info("HTTP "+ httpMethod.getStatusText());
+                    if(LOGGER.isDebugEnabled())
+                        LOGGER.debug("HTTP "+ httpMethod.getStatusText() + " <-- " + url);
                     if(ignoreResponseContentOnSuccess)
                         return "";
 					String response = IOUtils.toString(httpMethod.getResponseBodyAsStream());
 					return response;
 				default:
-					LOGGER.warn("Bad response: code["+lastHttpStatus+"]" +
-							" msg["+httpMethod.getStatusText()+"]" +
-							" url["+url+"]" +
-                            " method["+httpMethod.getClass().getSimpleName()+"]: " +
-                            IOUtils.toString(httpMethod.getResponseBodyAsStream())
+					String badresponse = IOUtils.toString(httpMethod.getResponseBodyAsStream());
+                    String message = getGeoNetworkErrorMessage(badresponse);
+
+					LOGGER.warn("Bad response: "+lastHttpStatus
+                            + " " + httpMethod.getStatusText()
+							+ " -- " + httpMethod.getName()
+                            + " " +url
+                            + " : "
+                            + message
 							);
+                    if(LOGGER.isDebugEnabled())
+                        LOGGER.debug("GeoNetwork response:\n"+badresponse);
 					return null;
 			}
 		} catch (ConnectException e) {
@@ -464,9 +474,29 @@ public class HTTPUtils {
             client.getState().setCredentials(new AuthScope(u.getHost(), u.getPort()), defaultcreds);
             client.getParams().setAuthenticationPreemptive(true); // GS2 by default always requires authentication
         } else {
-            if(LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Not setting credentials to access to " + url);
+            if(LOGGER.isTraceEnabled()) {
+                LOGGER.trace("Not setting credentials to access to " + url);
             }
+        }
+    }
+
+    protected static String getGeoNetworkErrorMessage(String msg) {
+        try {
+            SAXBuilder builder = new SAXBuilder();
+            Document error = builder.build(new StringReader(msg));
+            return error.getRootElement().getChildText("message");
+        } catch (Exception ex) {
+            return "-";
+        }
+    }
+
+    protected static String getGeoNetworkErrorMessage(InputStream msg) {
+        try {
+            SAXBuilder builder = new SAXBuilder();
+            Document error = builder.build(msg);
+            return error.getRootElement().getChildText("message");
+        } catch (Exception ex) {
+            return "-";
         }
     }
 

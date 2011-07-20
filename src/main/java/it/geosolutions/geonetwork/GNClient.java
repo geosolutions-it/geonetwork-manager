@@ -29,12 +29,18 @@ import it.geosolutions.geonetwork.op.GNLogin;
 import it.geosolutions.geonetwork.op.GNMetadataInsert;
 import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
+import it.geosolutions.geonetwork.op.GNMetadataDelete;
+import it.geosolutions.geonetwork.op.GNMetadataGet;
+import it.geosolutions.geonetwork.op.GNMetadataSearch;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
+import it.geosolutions.geonetwork.util.GNSearchRequest;
+import it.geosolutions.geonetwork.util.GNSearchResponse;
 import it.geosolutions.geonetwork.util.HTTPUtils;
 
 import java.io.File;
 import org.apache.log4j.Logger;
+import org.jdom.Element;
 
 
 /**
@@ -82,5 +88,27 @@ public class GNClient {
     public void setPrivileges(long metadataId, GNPrivConfiguration cfg) throws GNLibException, GNServerException {
         GNMetadataAdmin.setPriv(connection, gnServiceURL, metadataId, cfg);
     }
+
+    public GNSearchResponse search(GNSearchRequest searchRequest) throws GNLibException, GNServerException {
+        return GNMetadataSearch.search(connection, gnServiceURL, searchRequest);
+    }
+
+    public GNSearchResponse search(File fileRequest) throws GNLibException, GNServerException {
+        return GNMetadataSearch.search(connection, gnServiceURL, fileRequest);
+    }
+
+    public Element get(Long id) throws GNLibException, GNServerException {
+        return GNMetadataGet.get(connection, gnServiceURL, id);
+    }
+
+    public Element get(String uuid) throws GNLibException, GNServerException {
+        return GNMetadataGet.get(connection, gnServiceURL, uuid);
+    }
+
+    public void deleteMetadata(long id) throws GNLibException, GNServerException {
+        GNMetadataDelete.delete(connection, gnServiceURL, id);
+    }
+
+
 
 }

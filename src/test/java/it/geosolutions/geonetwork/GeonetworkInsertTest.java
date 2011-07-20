@@ -28,9 +28,7 @@ import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
 import org.apache.log4j.Logger;
 import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
-import junit.framework.TestCase;
+import org.jdom.Element;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -38,29 +36,18 @@ import static org.junit.Assert.*;
  *
  * @author ETj (etj at geo-solutions.it)
  */
-public class GeonetworkInsertTest extends TestCase {
+public class GeonetworkInsertTest extends GeonetworkTest {
     private final static Logger LOGGER = Logger.getLogger(GeonetworkInsertTest.class);
-
-    boolean runIntegrationTest = false;
-
-    private static final String gnServiceURL = "http://localhost:8080/geonetwork";
-    private static final String gnUsername = "admin";
-    private static final String gnPassword = "admin";
     
     public GeonetworkInsertTest() {
     }
 
-//    @Before 
-    public void setUp() throws Exception {
-        super.setUp();
-        LOGGER.info("====================> " + getName());
-    }
     
     @Test
     public void testInsertPureMetadata() throws Exception {
         if( ! runIntegrationTest ) return;
         
-        GNInsertConfiguration cfg = createConfiguration();
+        GNInsertConfiguration cfg = createInsertConfiguration();
 
         GNPrivConfiguration pcfg = new GNPrivConfiguration();
         pcfg.addPrivileges(0, "012345");
@@ -68,56 +55,64 @@ public class GeonetworkInsertTest extends TestCase {
         pcfg.addPrivileges(2, "012345");
         pcfg.addPrivileges(3, "012345");
         pcfg.addPrivileges(4, "012345");
-        
+
         File file = loadFile("metadata.xml");
         assertNotNull(file);
 
-        GNClient client = new GNClient(gnServiceURL);
-        boolean logged = client.login(gnUsername, gnPassword);
-        assertTrue("Could not log in", logged);
-
+        GNClient client = createClientAndLogin();
         long id = client.insertMetadata(cfg, file);
 
         client.setPrivileges(id, pcfg);
+
+        Element md = client.get(id);
+
+        client.deleteMetadata(id);
     }
 
     @Test
     public void testInsertRequest() throws Exception {
         if( ! runIntegrationTest ) return;
-        
-        GNInsertConfiguration cfg = createConfiguration();
-        
+                
         File file = loadFile("request.xml");
         assertNotNull(file);
         
-        GNClient client = new GNClient(gnServiceURL);
-        boolean logged = client.login(gnUsername, gnPassword);
-        assertTrue("Could not log in", logged);
+        GNClient client = createClientAndLogin();
 
+        // insert
         long id = client.insertRequest(file);
+        // get
+        Element md = client.get(id);
+        // delete
+        client.deleteMetadata(id);
     }
 
-    protected GNInsertConfiguration createConfiguration() {
-        GNInsertConfiguration cfg = new GNInsertConfiguration();
-        
-        cfg.setCategory("datasets");
-        cfg.setGroup("1"); // group 1 is usually "all"
-        cfg.setStyleSheet("_none_");
-        cfg.setValidate(Boolean.FALSE);
-        return cfg;
-    }
-    
-    private File loadFile(String name) {        
+    @Test
+    public void testBadDelete() throws Exception {
+        if( ! runIntegrationTest ) return;
+
+        GNClient client = createClientAndLogin();
+        // delete
         try {
-            URL url = this.getClass().getClassLoader().getResource(name);
-            if(url == null)
-                throw new IllegalArgumentException("Cant get file '"+name+"'");
-            File file = new File(url.toURI());
-            return file;
-        } catch (URISyntaxException e) {
-            LOGGER.error("Can't load file " + name + ": " + e.getMessage(), e);
-            return null;
-        }    
+            client.deleteMetadata(-10L);
+            fail("Untrapped exception");
+        } catch (Exception e) {
+            LOGGER.info("Exception successfully trapped");
+        }
     }
-    
+
+    @Test
+    public void testBadGet() throws Exception {
+        if( ! runIntegrationTest ) return;
+
+        GNClient client = createClientAndLogin();
+        // delete
+        try {
+            client.get(-10L);
+            fail("Untrapped exception");
+        } catch (Exception e) {
+            LOGGER.info("Exception successfully trapped");
+        }
+    }
+
+       
 }

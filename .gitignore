@@ -12,3 +12,4 @@ nb*.xml
 
 ./target
 
+/target/
