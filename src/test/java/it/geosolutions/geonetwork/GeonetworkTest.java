@@ -24,6 +24,10 @@
  */
 package it.geosolutions.geonetwork;
 
+import it.geosolutions.geonetwork.exception.GNLibException;
+import it.geosolutions.geonetwork.exception.GNServerException;
+import it.geosolutions.geonetwork.util.GNSearchRequest;
+import it.geosolutions.geonetwork.util.GNSearchResponse;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import org.apache.log4j.Logger;
 import java.io.File;
@@ -55,15 +59,37 @@ public abstract class GeonetworkTest extends TestCase {
     }
     
 
-    protected GNClient createClientAndLogin() throws Exception {
+    protected GNClient createClientAndLogin() {
         
         GNClient client = new GNClient(gnServiceURL);
         boolean logged = client.login(gnUsername, gnPassword);
         assertTrue("Could not log in", logged);
         return client;
     }
+    
+    /**
+     * Utility method to remove all metadata in GN.
+     */
+    protected void removeAllMetadata() throws GNLibException, GNServerException {
+        GNClient client = createClientAndLogin();
 
-    protected GNInsertConfiguration createInsertConfiguration() {
+        GNSearchRequest searchRequest = new GNSearchRequest(); // empty fiter, all metadaat will be returned
+        GNSearchResponse searchResponse = client.search(searchRequest);
+
+        LOGGER.info("Found " + searchResponse.getCount() + " existing metadata");
+        for (GNSearchResponse.GNMetadata metadata : searchResponse) {
+            LOGGER.info("Removing md ID:" + metadata.getId() + " UUID:" + metadata.getUUID());
+            Long id = metadata.getId();
+            client.deleteMetadata(id);
+        }
+
+        // check that the catalog is really empty
+        searchResponse = client.search(searchRequest);
+        assertEquals(0, searchResponse.getCount());
+        LOGGER.info("All metadata removed successfully");
+    }
+
+    protected GNInsertConfiguration createDefaultInsertConfiguration() {
         GNInsertConfiguration cfg = new GNInsertConfiguration();
         
         cfg.setCategory("datasets");

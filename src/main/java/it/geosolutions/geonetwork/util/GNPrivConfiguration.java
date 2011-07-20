@@ -30,11 +30,17 @@ import java.util.List;
 
 
 /**
- * 
+ *
+ * <i>TODO: don't use Strings for encoding/packing privileges, since they may be ambiguous
+ * (alse see {@link GNPriv}).</i>
+ *
  * @author ETj (etj at geo-solutions.it)
  */
 public class GNPrivConfiguration {
     
+    public final static int GROUP_GUEST    = -1;
+    public final static int GROUP_INTRANET = 0;
+    public final static int GROUP_ALL      = 1;
 
     /**
      * Operation privileges as required by GeoNetwork:
@@ -75,7 +81,7 @@ public class GNPrivConfiguration {
                 privileges = new ArrayList<Privileges>();
         }
 
-        if(!ops.matches("0?1?2?3?4?5?")) {
+        if(!ops.matches("0?1?2?3?4?5?6?")) {
             throw new IllegalArgumentException("Unrecognized privileges set '"+ops+"'");
         }
         
@@ -119,6 +125,32 @@ public class GNPrivConfiguration {
 
         public void setOps(String ops) {
             this.ops = ops;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Privileges other = (Privileges) obj;
+            if (this.group != other.group && (this.group == null || !this.group.equals(other.group))) {
+                return false;
+            }
+            if ((this.ops == null) ? (other.ops != null) : !this.ops.equals(other.ops)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 37 * hash + (this.group != null ? this.group.hashCode() : 0);
+            hash = 37 * hash + (this.ops != null ? this.ops.hashCode() : 0);
+            return hash;
         }
     }
     

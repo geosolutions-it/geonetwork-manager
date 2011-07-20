@@ -75,7 +75,7 @@ public class GNMetadataAdmin {
                             .append('_').append(groupId)
                             .append('_').append(c)
                             .toString();
-                    request.addContent(new Element(op));
+                    request.addContent(new Element(op).setText("on"));
                 }
             }
         }

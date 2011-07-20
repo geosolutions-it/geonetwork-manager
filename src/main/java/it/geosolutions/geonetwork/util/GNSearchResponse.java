@@ -24,6 +24,7 @@
  */
 package it.geosolutions.geonetwork.util;
 
+import java.util.Iterator;
 import java.util.List;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -34,7 +35,7 @@ import org.jdom.output.XMLOutputter;
 /**
  * @author ETj (etj at geo-solutions.it)
  */
-public class GNSearchResponse {
+public class GNSearchResponse implements Iterable<GNSearchResponse.GNMetadata> {
 
     private final static Namespace NS_GEONET = Namespace.getNamespace("geonet", "http://www.fao.org/geonetwork");
 
@@ -73,6 +74,26 @@ public class GNSearchResponse {
         return new GNMetadata(metadata);
     }
 
+    public Iterator<GNMetadata> iterator() {
+        return new Iterator<GNMetadata>() {
+
+            private List<Element> list = (List<Element>)response.getChildren("metadata");
+            private Iterator<Element> iter = list.iterator();
+
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            public GNMetadata next() {
+                return new GNMetadata(iter.next());
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException("Not supported.");
+            }
+        };
+    }
+
     public static class GNMetadata {
         private Element metadata;
 
@@ -84,8 +105,8 @@ public class GNSearchResponse {
             return metadata.getChild("info", NS_GEONET);
         }
 
-        public String getId() {
-            return getInfo().getChildText("id");
+        public Long getId() {
+            return Long.valueOf(getInfo().getChildText("id"));
         }
 
         public String getUUID() {

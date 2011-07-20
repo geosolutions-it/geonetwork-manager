@@ -24,8 +24,15 @@
  */
 package it.geosolutions.geonetwork;
 
+import it.geosolutions.geonetwork.exception.GNException;
+import it.geosolutions.geonetwork.exception.GNLibException;
+import it.geosolutions.geonetwork.exception.GNServerException;
+import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNSearchRequest;
 import it.geosolutions.geonetwork.util.GNSearchResponse;
+import java.io.File;
+import java.io.IOException;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.output.Format;
@@ -43,8 +50,82 @@ public class GeonetworkSearchTest extends GeonetworkTest {
     public GeonetworkSearchTest() {
     }
 
+    public void testSearchMetadata() throws GNException, IOException {
+        if(!runIntegrationTest)
+            return;
+        removeAllMetadata();
+
+        GNClient client = createClientAndLogin();
+        insertSome();
+
+        {
+            GNSearchRequest searchRequest = new GNSearchRequest();
+            GNSearchResponse searchResponse = client.search(searchRequest);
+            assertEquals(12, searchResponse.getCount());
+        }
+
+        {
+            GNSearchRequest searchRequest = new GNSearchRequest();
+            searchRequest.addParam(GNSearchRequest.Param.title, "test0");
+            GNSearchResponse searchResponse = client.search(searchRequest);
+            assertEquals(2, searchResponse.getCount());
+        }
+        {
+            GNSearchRequest searchRequest = new GNSearchRequest();
+            searchRequest.addParam(GNSearchRequest.Param.title, "ACK00");
+            GNSearchResponse searchResponse = client.search(searchRequest);
+            assertEquals(5, searchResponse.getCount());
+        }
+
+        {
+            // create a request file
+            Element request = new Element("request").addContent(
+                    new Element("any").setText("ACK99"));
+            File tempFile = File.createTempFile("gbtest_request", ".xml");
+            FileUtils.forceDeleteOnExit(tempFile);
+            XMLOutputter outputter = new XMLOutputter(Format.getCompactFormat());
+            FileUtils.writeStringToFile(tempFile, outputter.outputString(request));
+            GNSearchResponse searchResponse = client.search(tempFile);
+            assertEquals(7, searchResponse.getCount());
+        }
+    }
+
+    protected void insertSome() throws IOException, GNException {
+        final String TITLETOKEN = "TOKEN_FOR_TITLE";
+
+        GNClient client = createClientAndLogin();
+
+        File origFile = loadFile("metadata_token.xml");
+        String orig = FileUtils.readFileToString(origFile);
+
+        File tempFile = File.createTempFile("gbtest", ".xml");
+        FileUtils.forceDeleteOnExit(tempFile);
+
+        for (int i = 0; i < 5; i++) {
+            String title = "GeoBatch GeoNetworkAction test"+i+ " ACK00";
+            String test = orig.replace(TITLETOKEN, title);
+            FileUtils.writeStringToFile(tempFile, test);
+            long id = insertMetadata(client, tempFile);
+            LOGGER.info("Created test metadata id:"+id+" ["+title+"]");
+        }
+
+        for (int i = 0; i < 7; i++) {
+            String title = "GeoBatch GeoNetworkAction test"+i+ " ACK99";
+            String test = orig.replace(TITLETOKEN, title);
+            FileUtils.writeStringToFile(tempFile, test);
+            long id = insertMetadata(client, tempFile);
+            LOGGER.info("Created test metadata id:"+id+" ["+title+"]");
+        }
+    }
+
+    public long insertMetadata(GNClient client, File file) throws GNServerException, GNLibException {
+        GNInsertConfiguration cfg = createDefaultInsertConfiguration();
+        long id = client.insertMetadata(cfg, file);
+        return id;
+    }
+
     @Test
-    public void testSearch() throws Exception {
+    public void testEmptySearch() throws Exception {
         if( ! runIntegrationTest ) return;
 
         GNClient client = createClientAndLogin();
@@ -55,10 +136,13 @@ public class GeonetworkSearchTest extends GeonetworkTest {
         GNSearchResponse searchResponse = client.search(searchRequest);
         if(searchResponse.getCount() != 0 ) {
             LOGGER.error(searchResponse.toString());
-            Long id = Long.valueOf(searchResponse.getMetadata(0).getId());
-            Element md = client.get(id);
-            XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
-            LOGGER.error("Metadata -> " + out.outputString(md));
+            for (GNSearchResponse.GNMetadata metadata : searchResponse) {
+                Long id = metadata.getId();
+                LOGGER.info("id #" + id);
+                Element md = client.get(id);
+                XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
+                LOGGER.error("Metadata -> " + out.outputString(md));
+            }
         }
         assertEquals(0, searchResponse.getCount());
 

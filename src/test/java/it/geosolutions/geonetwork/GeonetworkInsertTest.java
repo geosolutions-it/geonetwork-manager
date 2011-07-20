@@ -24,7 +24,9 @@
  */
 package it.geosolutions.geonetwork;
 
+import java.util.EnumSet;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
+import it.geosolutions.geonetwork.util.GNPriv;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
 import org.apache.log4j.Logger;
 import java.io.File;
@@ -47,14 +49,14 @@ public class GeonetworkInsertTest extends GeonetworkTest {
     public void testInsertPureMetadata() throws Exception {
         if( ! runIntegrationTest ) return;
         
-        GNInsertConfiguration cfg = createInsertConfiguration();
+        GNInsertConfiguration cfg = createDefaultInsertConfiguration();
 
         GNPrivConfiguration pcfg = new GNPrivConfiguration();
-        pcfg.addPrivileges(0, "012345");
-        pcfg.addPrivileges(1, "012345");
-        pcfg.addPrivileges(2, "012345");
-        pcfg.addPrivileges(3, "012345");
-        pcfg.addPrivileges(4, "012345");
+
+        pcfg.addPrivileges(GNPrivConfiguration.GROUP_GUEST,    EnumSet.of(GNPriv.FEATURED));
+        pcfg.addPrivileges(GNPrivConfiguration.GROUP_INTRANET, EnumSet.of(GNPriv.DYNAMIC, GNPriv.FEATURED));
+        pcfg.addPrivileges(GNPrivConfiguration.GROUP_ALL,      EnumSet.of(GNPriv.VIEW, GNPriv.DYNAMIC, GNPriv.FEATURED));
+        pcfg.addPrivileges(2, EnumSet.allOf(GNPriv.class));
 
         File file = loadFile("metadata.xml");
         assertNotNull(file);

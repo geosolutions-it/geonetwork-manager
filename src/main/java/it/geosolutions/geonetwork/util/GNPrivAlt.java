@@ -27,50 +27,21 @@ package it.geosolutions.geonetwork.util;
 /**
  * Operation privileges as required by GeoNetwork.
  * <p>
- * In the <a href="http://geonetwork-opensource.org/latest/developers/xml_services/metadata_xml_services.html#request-to-metadata-admin-service">
- * geonetwork services documentation page</a>, operations are defined by their
- * own id, each representing a granted privilege: <UL>
- * <LI>0: view</LI>
- * <LI>1: download</LI>
- * <LI>2: editing</LI>
- * <LI>3: notify</LI>
- * <LI><i>4: dynamic</i></LI>
- * <LI><i>5: featured</i></LI>
- * </UL>
- *
- * Anyway the <a href="http://geonetwork.svn.sourceforge.net/viewvc/geonetwork/branches/2.6.x/web/src/main/webapp/WEB-INF/classes/setup/sql/data/data-db-mckoi.sql?revision=7877&view=markup"
- * >DB init scripts</a> in geonetwork define <pre>{@code:
- * INSERT INTO Operations VALUES  (0,'view','y');
- * INSERT INTO Operations VALUES  (1,'download','y');
- * INSERT INTO Operations VALUES  (2,'editing','y');
- * INSERT INTO Operations VALUES  (3,'notify','y');
- * INSERT INTO Operations VALUES  (5,'dynamic','y');
- * INSERT INTO Operations VALUES  (6,'featured','y');}</pre>
- * (note the differences starting from id 4).<br/>
- * <P>
- * <u>We'll align to this latter definitions</u>.
- * Anyway, you may use the {@link GNPrivAlt} enum as alternative in case you need it.
- *
+ * Please refer to documentation in {@link GNPriv}.
  *
  * @author ETj (etj at geo-solutions.it)
  */
-public enum GNPriv {
-    /** priv #0 */
+public enum GNPrivAlt {
     VIEW(0),
-    /** priv #1 */
     DOWNLOAD(1),
-    /** priv #2 */
     EDITING(2),
-    /** priv #3 */
     NOTIFY(3),
-    /** priv #5 */
-    DYNAMIC(5),
-    /** priv #6 */
-    FEATURED(6);
+    DYNAMIC(4),
+    FEATURED(5);
 
     private int id;
 
-    private GNPriv(int id) {
+    private GNPrivAlt(int id) {
         this.id = id;
     }
 
@@ -78,8 +49,8 @@ public enum GNPriv {
         return id;
     }
 
-    public static GNPriv get(int id) {
-        for (GNPriv priv : GNPriv.values()) {
+    public static GNPrivAlt get(int id) {
+        for (GNPrivAlt priv : GNPrivAlt.values()) {
             if(priv.getId() == id)
                 return priv;
         }
