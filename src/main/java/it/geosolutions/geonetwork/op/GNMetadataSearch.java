@@ -42,9 +42,7 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 /**
- * The metadata.admin service updates the operations allowed for a metadata
- * with the list of operations allowed send in the parameters,
- * deleting all the operations allowed assigned previously.
+ * The xml.search service can be used to retrieve the metadata stored in GeoNetwork.
  * 
  * @author ETj (etj at geo-solutions.it)
  */
