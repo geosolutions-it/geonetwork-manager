@@ -47,7 +47,7 @@ public class GeonetworkInsertTest extends GeonetworkTest {
     
     @Test
     public void testInsertPureMetadata() throws Exception {
-        if( ! runIntegrationTest ) return;
+        if( ! runIntegrationTest() ) return;
         
         GNInsertConfiguration cfg = createDefaultInsertConfiguration();
 
@@ -73,7 +73,7 @@ public class GeonetworkInsertTest extends GeonetworkTest {
 
     @Test
     public void testInsertRequest() throws Exception {
-        if( ! runIntegrationTest ) return;
+        if( ! runIntegrationTest() ) return;
                 
         File file = loadFile("request.xml");
         assertNotNull(file);
@@ -90,7 +90,7 @@ public class GeonetworkInsertTest extends GeonetworkTest {
 
     @Test
     public void testBadDelete() throws Exception {
-        if( ! runIntegrationTest ) return;
+        if( ! runIntegrationTest() ) return;
 
         GNClient client = createClientAndLogin();
         // delete
@@ -104,7 +104,7 @@ public class GeonetworkInsertTest extends GeonetworkTest {
 
     @Test
     public void testBadGet() throws Exception {
-        if( ! runIntegrationTest ) return;
+        if( ! runIntegrationTest() ) return;
 
         GNClient client = createClientAndLogin();
         // delete

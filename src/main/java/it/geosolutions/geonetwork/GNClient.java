@@ -31,7 +31,9 @@ import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
 import it.geosolutions.geonetwork.op.GNMetadataDelete;
 import it.geosolutions.geonetwork.op.GNMetadataGet;
+import it.geosolutions.geonetwork.op.GNMetadataGetVersion;
 import it.geosolutions.geonetwork.op.GNMetadataSearch;
+import it.geosolutions.geonetwork.op.GNMetadataUpdate;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
 import it.geosolutions.geonetwork.util.GNSearchRequest;
@@ -108,7 +110,15 @@ public class GNClient {
     public void deleteMetadata(long id) throws GNLibException, GNServerException {
         GNMetadataDelete.delete(connection, gnServiceURL, id);
     }
+    
+    public void updateMetadata(long id, File metadataFile) throws GNLibException, GNServerException {
+        String version = GNMetadataGetVersion.get(connection, gnServiceURL, id);
+        GNMetadataUpdate.update(connection, gnServiceURL, id, version, metadataFile);
+    }
 
-
-
+    //==========================================================================
+    
+    protected HTTPUtils getConnection() {
+        return connection;
+    }
 }

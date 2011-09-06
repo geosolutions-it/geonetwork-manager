@@ -51,7 +51,7 @@ public class GeonetworkSearchTest extends GeonetworkTest {
     }
 
     public void testSearchMetadata() throws GNException, IOException {
-        if(!runIntegrationTest)
+        if(!runIntegrationTest())
             return;
         removeAllMetadata();
 
@@ -126,7 +126,7 @@ public class GeonetworkSearchTest extends GeonetworkTest {
 
     @Test
     public void testEmptySearch() throws Exception {
-        if( ! runIntegrationTest ) return;
+        if( ! runIntegrationTest() ) return;
 
         GNClient client = createClientAndLogin();
         GNSearchRequest searchRequest = new GNSearchRequest();
