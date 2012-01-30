@@ -1,17 +1,19 @@
-geonetwork-manager is a java library to interact with GeoNetwork Opensource. Its aim is to provide a simple API to create, delete, administer the catalog entries programmatically.
+geonetwork-manager is a java library to interact with GeoNetwork Opensource. 
+Its aim is to provide a simple API to create, delete, administer the catalog entries programmatically.
 
-Status
-This library has just been refactored out from a more extensive project. The supported operations at the moment are
+== Status
 
-insert metadata,
-search metadata,
-retrieve metadata,
-update metadata,
-delete metadata,
-change permissions.
+This library has just been refactored out from a more extensive project. 
+The supported operations at the moment are
 
-A requirement for this library is to depend as less as possible on external libraries. This library aims at being lean and mean.
+* insert metadata,
+* search metadata,
+* retrieve metadata,
+* update metadata,
+* delete metadata,
+* change permissions.
+
 
 For more information see this page:
 
-http://code.google.com/p/geonetwork-manager/
+   https://github.com/geosolutions-it/geonetwork-manager
