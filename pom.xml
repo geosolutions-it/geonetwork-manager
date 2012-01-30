@@ -42,6 +42,8 @@
         libs as possible.
     </description>
 
+    <url>https://github.com/geosolutions-it/geonetwork-manager</url>
+
     <inceptionYear>2011</inceptionYear>
 
     <organization>
@@ -71,17 +73,14 @@
             <distribution>repo</distribution>            
         </license>
     </licenses>
-    
-    <url>http://code.google.com/p/geonetwork-manager/</url>
-    
+        
     <issueManagement>
-        <system>googlecode</system>
-        <url>http://code.google.com/p/geonetwork-manager/issues/list</url>
+        <system>github</system>
+        <url>https://github.com/geosolutions-it/geonetwork-manager/issues</url>
     </issueManagement>
         
     <scm>
         <connection>scm:git:https://github.com/geosolutions-it/geonetwork-manager.git</connection>
-        <!--developerConnection>scm:git</developerConnection-->
         <tag>master</tag>
         <url>https://github.com/geosolutions-it/geonetwork-manager</url>
     </scm>
@@ -95,13 +94,13 @@
     <distributionManagement>
         <downloadUrl>http://maven.geo-solutions.it</downloadUrl>
         <repository>
-            <uniqueVersion>false</uniqueVersion>
             <id>geosolutions</id>
             <url>ftp://maven.geo-solutions.it/</url>
+            <uniqueVersion>false</uniqueVersion>
         </repository>
         <site>
             <id>demo.geosolutions</id>
-            <url>scp://demo.geo-solutions.it/var/www/share/javadoc/gnman</url>
+            <url>scp://demo.geo-solutions.it/var/www/share/javadoc/gnman/${project.version}</url>
         </site>
     </distributionManagement>
 
@@ -113,8 +112,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.0.2</version>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                 </configuration>
             </plugin>
 
@@ -134,23 +133,35 @@
 
           <!-- ======================================================= -->
           <!--     Source packaging.                                      -->
-          <!-- ======================================================= -->
-                <plugin>
-                    <inherited>true</inherited>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <configuration>
-                        <attach>true</attach>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
+
+            <plugin>
+                <inherited>true</inherited>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ======================================================= -->
+            <!-- versioning -->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.2.2</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
 
         </plugins>
 
@@ -164,7 +175,7 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ftp</artifactId>
-                <version>1.0-beta-7</version>
+                <version>1.0</version>
             </extension>
         </extensions>
     </build>
