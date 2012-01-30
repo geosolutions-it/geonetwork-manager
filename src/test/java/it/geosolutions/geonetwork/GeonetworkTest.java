@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
 public abstract class GeonetworkTest extends TestCase {
     private final static Logger LOGGER = Logger.getLogger(GeonetworkTest.class);
 
-    protected boolean runIntegrationTest = false;
+    private boolean runIntegrationTest = false;
 
     protected static final String gnServiceURL = "http://localhost:8080/geonetwork";
     protected static final String gnUsername = "admin";
@@ -56,6 +56,12 @@ public abstract class GeonetworkTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
         LOGGER.info("====================> " + getName());
+    }
+    
+    protected boolean runIntegrationTest() {
+        if(! runIntegrationTest)
+            LOGGER.info("Skipping test " + getName());
+        return runIntegrationTest;
     }
     
 
