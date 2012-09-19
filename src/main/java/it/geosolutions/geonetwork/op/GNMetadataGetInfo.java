@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2012 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,97 +36,122 @@ import org.apache.log4j.Logger;
 
 import org.jdom.Element;
 import org.jdom.JDOMException;
-import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 
 /**
- * Get the version number for a given Metadata.
+ * Get some info (id, uuid, version number) for a given Metadata.
  * <br/><br/>
- * GN does not provide the version seq number in an XML format, so this 
- * implementation it's quite a hack: it calls metadata.edit service in debug mode, 
- * and parses the version number from there. <br/>
- * 2 drawbacks here: 
- * - debug mode should be enabled, 
- * - the resulting document is about 1MB
+ * This operation uses a custom GN service that retrieves id, uuid of a metadata,
+ * and asks for a new version number.
+ *
+ * See http://trac.osgeo.org/geonetwork/ticket/1062
+ *
+ * If your GN instance does not implement the xmlk.metadata.info.getForUpdate service,
+ * please use the {@link GNMetadataGetVersion} operation.
  * 
  * @author ETj (etj at geo-solutions.it)
  */
-public class GNMetadataGetVersion {
-        
-    private final static Logger LOGGER = Logger.getLogger(GNMetadataGetVersion.class);
-    
-	public static final Namespace NS_GEONET = Namespace.getNamespace("geonet", "http://www.fao.org/geonetwork");    
-	public static final Namespace NS_GMD = Namespace.getNamespace("gmd", "http://www.isotc211.org/2005/gmd");    
+public class GNMetadataGetInfo {
 
-    public static String get(HTTPUtils connection, String gnServiceURL, Long id) throws GNLibException, GNServerException {
+    private final static Logger LOGGER = Logger.getLogger(GNMetadataGetInfo.class);
+
+
+    public static class MetadataInfo {
+        long id;
+        String uuid;
+        Integer version;
+
+        public long getId() {
+            return id;
+        }
+
+        public String getUuid() {
+            return uuid;
+        }
+
+        /**
+         * @return the updated version number, or null if update was not requested.
+         */
+        public Integer getVersion() {
+            return version;
+        }
+
+        @Override
+        public String toString() {
+            return "MetadataInfo[" 
+                    + "id=" + id
+                    + ", uuid=" + uuid
+                    + (version != null? ", version=" + version : "")
+                    + ']';
+        }
+    }
+            
+
+    public static MetadataInfo get(HTTPUtils connection, String gnServiceURL, Long id, boolean forUpdate) throws GNLibException, GNServerException {
+        return getAux(connection, gnServiceURL, "id="+id, forUpdate);
+    }
+    public static MetadataInfo get(HTTPUtils connection, String gnServiceURL, String uuid, boolean forUpdate) throws GNLibException, GNServerException {
+        return getAux(connection, gnServiceURL, "uuid="+uuid, forUpdate);
+    }
+
+    protected static MetadataInfo getAux(HTTPUtils connection, String gnServiceURL, String queryId, boolean forUpdate) throws GNLibException, GNServerException {
         try {
             if(LOGGER.isDebugEnabled())
-                LOGGER.debug("Retrieve metadata #"+id);
+                LOGGER.debug("Retrieve metadata info for " + queryId);
 
-            String serviceURL = gnServiceURL + "/srv/en/metadata.edit!?id="+id;
+            String serviceName = forUpdate? "getForUpdate" : "get";
+            String serviceURL = gnServiceURL + "/srv/en/xml.metadata.info."+serviceName+"?"+queryId;
             
             connection.setIgnoreResponseContentOnSuccess(false);
             String response = connection.get(serviceURL);
-            if(LOGGER.isDebugEnabled())
-                LOGGER.debug("Response is " + response.length() + " chars long");
+
+            if(LOGGER.isDebugEnabled()) {
+                if(response != null)
+                    LOGGER.debug("Response is " + response.length() + " chars long");
+                else
+                    LOGGER.debug("Response is null");
+            }
             
             if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
-                throw new GNServerException("Error retrieving metadata in GeoNetwork");
+                throw new GNServerException("Error retrieving data in GeoNetwork", connection.getLastHttpStatus());
 
-            String version = parseVersion(response);
+            MetadataInfo ret = parseMetadataInfo(response);
                         
             if(LOGGER.isDebugEnabled())
-                LOGGER.debug("Metadata " + id + " has version " + version); 
+                LOGGER.debug("Metadata " + queryId + " has info " + ret);
                         
-            return version;
+            return ret;
         } catch (MalformedURLException ex) {
             throw new GNLibException("Bad URL", ex);
         }
     }
     
-    private static String parseVersion(String s) throws GNLibException {
+    private static MetadataInfo parseMetadataInfo(String response) throws GNLibException {
         try {
             SAXBuilder builder = new SAXBuilder();
-            Element root = builder.build(new StringReader(s)).detachRootElement();
-            
-            /*
-             * <gmd:MD_Metadata 
-             *      xmlns:gmd="http://www.isotc211.org/2005/gmd" 
-             *      xmlns:gts="http://www.isotc211.org/2005/gts" 
-             *      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-             *      xmlns:gml="http://www.opengis.net/gml" 
-             *      xmlns:gco="http://www.isotc211.org/2005/gco" 
-             *      xmlns:geonet="http://www.fao.org/geonetwork" 
-             *      xsi:schemaLocation="http://www.isotc211.org/2005/gmd http://www.isotc211.org/2005/gmd/gmd.xsd">                         
-             */
-            
-            Element metadata = root.getChild("MD_Metadata", NS_GMD);
-            if(metadata == null) {
-                LOGGER.error("Could not find MD_Metadata child");
-                XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-                outputter.output(root, System.out);
-                
-                throw new GNLibException("Could not find MD_Metadata child");
-            }
+            Element root = builder.build(new StringReader(response)).detachRootElement();
                         
-            Element geonetInfo = metadata.getChild("info", NS_GEONET);
-            if(geonetInfo == null) {
-                LOGGER.error("Could not find geonet:info child");
-                XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-                outputter.output(root, System.out);
-                
-                throw new GNLibException("Could not find geonet:info child");
-            }
-            String version = geonetInfo.getChildText("version");
-            return version;
+            String id = root.getChildText("id");
+            String uuid = root.getChildText("uuid");
+            String sver = root.getChildText("version");
+
+            MetadataInfo info = new MetadataInfo();
+            info.id = Long.parseLong(id);
+            info.uuid = uuid;
+
+            if(sver!=null && ! sver.isEmpty())
+                info.version = Integer.parseInt(sver);
+
+            return info;
                 
         } catch (JDOMException ex) {
-            LOGGER.error("Error parsing GN response: " + s);
+            LOGGER.error("Error parsing GN response: " + response);
             throw new GNLibException("Error parsing GN response: " + ex.getMessage(), ex);
         } catch (IOException ex) {
             throw new GNLibException("Error while outputting", ex);
+        } catch(NumberFormatException ex) {
+            LOGGER.error("Error parsing number in GN response: " + response);
+            throw new GNLibException("Error parsing number in GN response: " + ex.getMessage(), ex);
         }
     }
 }
