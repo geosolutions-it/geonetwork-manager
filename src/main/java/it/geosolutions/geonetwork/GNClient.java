@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2012 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,6 +31,8 @@ import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
 import it.geosolutions.geonetwork.op.GNMetadataDelete;
 import it.geosolutions.geonetwork.op.GNMetadataGet;
+import it.geosolutions.geonetwork.op.GNMetadataGetInfo;
+import it.geosolutions.geonetwork.op.GNMetadataGetInfo.MetadataInfo;
 import it.geosolutions.geonetwork.op.GNMetadataGetVersion;
 import it.geosolutions.geonetwork.op.GNMetadataSearch;
 import it.geosolutions.geonetwork.op.GNMetadataUpdate;
@@ -114,6 +116,21 @@ public class GNClient {
     public void updateMetadata(long id, File metadataFile) throws GNLibException, GNServerException {
         String version = GNMetadataGetVersion.get(connection, gnServiceURL, id);
         GNMetadataUpdate.update(connection, gnServiceURL, id, version, metadataFile);
+    }
+
+    /**
+     * Uses the custom service xml.metadata.info.get.
+     * See http://trac.osgeo.org/geonetwork/ticket/1062
+     */
+    public MetadataInfo get(Long id, boolean forUpdate) throws GNLibException, GNServerException {
+        return GNMetadataGetInfo.get(connection, gnServiceURL, id, forUpdate);
+    }
+    /**
+     * Uses the custom service xml.metadata.info.get.
+     * See http://trac.osgeo.org/geonetwork/ticket/1062
+     */
+    public MetadataInfo get(String uuid, boolean forUpdate) throws GNLibException, GNServerException {
+        return GNMetadataGetInfo.get(connection, gnServiceURL, uuid, forUpdate);
     }
 
     //==========================================================================

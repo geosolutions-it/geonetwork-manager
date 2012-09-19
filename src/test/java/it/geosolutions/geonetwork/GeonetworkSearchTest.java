@@ -38,6 +38,7 @@ import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -50,6 +51,7 @@ public class GeonetworkSearchTest extends GeonetworkTest {
     public GeonetworkSearchTest() {
     }
 
+    @Test
     public void testSearchMetadata() throws GNException, IOException {
         if(!runIntegrationTest())
             return;

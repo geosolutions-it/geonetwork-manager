@@ -30,12 +30,27 @@ package it.geosolutions.geonetwork.exception;
  */
 public class GNServerException extends GNException {
 
+    private int httpCode = -1;
+
     public GNServerException(String message) {
         super(message);
+    }
+
+    public GNServerException(String message, int code) {
+        super(message);
+        this.httpCode = code;
     }
 
     public GNServerException(String message, Throwable cause) {
         super(message, cause);
     }
 
+    public GNServerException(String message, int code, Throwable cause) {
+        super(message, cause);
+        this.httpCode = code;
+    }
+
+    public int getHttpCode() {
+        return httpCode;
+    }
 }

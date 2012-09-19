@@ -33,17 +33,23 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
-import junit.framework.TestCase;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
 /**
  *
  * @author ETj (etj at geo-solutions.it)
  */
-public abstract class GeonetworkTest extends TestCase {
+public abstract class GeonetworkTest {
     private final static Logger LOGGER = Logger.getLogger(GeonetworkTest.class);
 
     private boolean runIntegrationTest = false;
+
+    @Rule
+    public TestName _testName = new TestName();
 
     protected static final String gnServiceURL = "http://localhost:8080/geonetwork";
     protected static final String gnUsername = "admin";
@@ -52,15 +58,16 @@ public abstract class GeonetworkTest extends TestCase {
     public GeonetworkTest() {
     }
 
-//    @Before 
+    @Before 
     public void setUp() throws Exception {
-        super.setUp();
-        LOGGER.info("====================> " + getName());
+//        super.setUp();
+        LOGGER.info("====================> " + _testName.getMethodName());
     }
     
     protected boolean runIntegrationTest() {
         if(! runIntegrationTest)
-            LOGGER.info("Skipping test " + getName());
+            LOGGER.info("Skipping test " +  _testName.getMethodName());
+        assumeTrue(runIntegrationTest);
         return runIntegrationTest;
     }
     
