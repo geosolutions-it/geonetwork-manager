@@ -118,18 +118,22 @@ public class GNClient {
         GNMetadataUpdate.update(connection, gnServiceURL, id, version, metadataFile);
     }
 
+    public void updateMetadata(long id, int version, File metadataFile) throws GNLibException, GNServerException {
+        GNMetadataUpdate.update(connection, gnServiceURL, id, Integer.toString(version), metadataFile);
+    }
+
     /**
      * Uses the custom service xml.metadata.info.get.
      * See http://trac.osgeo.org/geonetwork/ticket/1062
      */
-    public MetadataInfo get(Long id, boolean forUpdate) throws GNLibException, GNServerException {
+    public MetadataInfo getInfo(Long id, boolean forUpdate) throws GNLibException, GNServerException {
         return GNMetadataGetInfo.get(connection, gnServiceURL, id, forUpdate);
     }
     /**
      * Uses the custom service xml.metadata.info.get.
      * See http://trac.osgeo.org/geonetwork/ticket/1062
      */
-    public MetadataInfo get(String uuid, boolean forUpdate) throws GNLibException, GNServerException {
+    public MetadataInfo getInfo(String uuid, boolean forUpdate) throws GNLibException, GNServerException {
         return GNMetadataGetInfo.get(connection, gnServiceURL, uuid, forUpdate);
     }
 
