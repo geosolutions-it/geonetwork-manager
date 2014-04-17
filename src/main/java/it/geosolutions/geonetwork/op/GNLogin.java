@@ -69,9 +69,9 @@ public class GNLogin {
         XMLOutputter outputter = new XMLOutputter(Format.getCompactFormat());
         String xml = outputter.outputString(request);
         
-        String loginURL = serviceURL+"/srv/en/xml.user.login";
+        String loginURL = serviceURL+"/srv/eng/xml.user.login";
         String out = connection.postXml(loginURL, xml);
         
-        return connection.getLastHttpStatus() == HttpStatus.SC_OK;
+        return (connection.getLastHttpStatus() == HttpStatus.SC_OK);
     }
 }

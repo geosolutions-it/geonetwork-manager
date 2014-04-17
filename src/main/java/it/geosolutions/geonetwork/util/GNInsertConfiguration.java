@@ -30,10 +30,10 @@ package it.geosolutions.geonetwork.util;
  *
     data: (mandatory) Contains the metadata record
     group (mandatory): Owner group identifier for metadata
-    isTemplate: indicates if the metadata content is a new template or not. Default value: “n”
-    title: Metadata title. Only required if isTemplate = “y”
-    category (mandatory): Metadata category. Use “_none_” value to don’t assign any category
-    styleSheet (mandatory): Stylesheet name to transform the metadata before inserting in the catalog. Use “_none_” value to don’t apply any stylesheet
+    isTemplate: indicates if the metadata content is a new template or not. Default value: "n"
+    title: Metadata title. Only required if isTemplate = "y"
+    category (mandatory): Metadata category. Use "_none_" value to don’t assign any category
+    styleSheet (mandatory): Stylesheet name to transform the metadata before inserting in the catalog. Use "_none_" value to don’t apply any stylesheet
     validate: Indicates if the metadata should be validated before inserting in the catalog. Values: on, off (default)
  * 
  * @author ETj (etj at geo-solutions.it)
@@ -45,11 +45,11 @@ public class GNInsertConfiguration {
      */    
     private String group;
     /**
-     * category (mandatory): Metadata category. Use “_none_” value to don’t assign any category
+     * category (mandatory): Metadata category. Use "_none_" value to don’t assign any category
      */    
     private String category;
     /**
-     * styleSheet (mandatory): Stylesheet name to transform the metadata before inserting in the catalog. Use “_none_” value to don’t apply any stylesheet
+     * styleSheet (mandatory): Stylesheet name to transform the metadata before inserting in the catalog. Use "_none_" value to don’t apply any stylesheet
      */    
     private String styleSheet;
     /**

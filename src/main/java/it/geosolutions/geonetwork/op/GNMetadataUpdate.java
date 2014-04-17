@@ -67,7 +67,7 @@ public class GNMetadataUpdate {
      * <ul>
      * <li> id: (mandatory) Identifier of the metadata to update</li>
      * <li> version: (mandatory) This parameter is used to check if another user has updated the metadata after we retrieved it and before involking the update metadata service. CHECK how to provide value to the user</li>
-     * <li>isTemplate: indicates if the metadata content is a new template or not. Default value: “n”</li>
+     * <li>isTemplate: indicates if the metadata content is a new template or not. Default value: "n"</li>
      * <li>showValidationErrors: Indicates if the metadata should be validated before updating in the catalog.</li>
      * <li>title: Metadata title (for templates)</li>
      * <li>data (mandatory) Contains the metadata record</li>

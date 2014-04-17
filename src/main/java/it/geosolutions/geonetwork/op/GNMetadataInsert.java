@@ -154,7 +154,7 @@ public class GNMetadataInsert {
      */
     private static long gnInsertMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNLibException, GNServerException {
 
-        String serviceURL = baseURL + "/srv/en/xml.metadata.insert";                
+        String serviceURL = baseURL + "/srv/eng/xml.metadata.insert";
         String res = gnPut(connection, serviceURL, gnRequest);
         if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
             throw new GNServerException("Error inserting metadata in GeoNetwork (HTTP code "+connection.getLastHttpStatus()+")");
