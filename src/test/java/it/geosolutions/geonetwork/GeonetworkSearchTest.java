@@ -39,6 +39,7 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 
 /**
  *
@@ -57,26 +58,29 @@ public class GeonetworkSearchTest extends GeonetworkTest {
             return;
         removeAllMetadata();
 
-        GNClient client = createClientAndLogin();
+        GNClient client = createClientAndCheckConnection();
         insertSome();
 
         {
             GNSearchRequest searchRequest = new GNSearchRequest();
             GNSearchResponse searchResponse = client.search(searchRequest);
-            assertEquals(12, searchResponse.getCount());
+//            assertEquals(12, searchResponse.getCount());
+            asyncSearchAssertEquals(12, client, searchRequest);
         }
 
         {
             GNSearchRequest searchRequest = new GNSearchRequest();
             searchRequest.addParam(GNSearchRequest.Param.title, "test0");
             GNSearchResponse searchResponse = client.search(searchRequest);
-            assertEquals(2, searchResponse.getCount());
+//            assertEquals(2, searchResponse.getCount());
+            asyncSearchAssertEquals(2, client, searchRequest);
         }
         {
             GNSearchRequest searchRequest = new GNSearchRequest();
             searchRequest.addParam(GNSearchRequest.Param.title, "ACK00");
             GNSearchResponse searchResponse = client.search(searchRequest);
-            assertEquals(5, searchResponse.getCount());
+//            assertEquals(5, searchResponse.getCount());
+            asyncSearchAssertEquals(5, client, searchRequest);
         }
 
         {
@@ -87,15 +91,16 @@ public class GeonetworkSearchTest extends GeonetworkTest {
             FileUtils.forceDeleteOnExit(tempFile);
             XMLOutputter outputter = new XMLOutputter(Format.getCompactFormat());
             FileUtils.writeStringToFile(tempFile, outputter.outputString(request));
-            GNSearchResponse searchResponse = client.search(tempFile);
-            assertEquals(7, searchResponse.getCount());
+//            GNSearchResponse searchResponse = client.search(tempFile);
+//            assertEquals(7, searchResponse.getCount());
+            asyncSearchAssertEquals(7, client, tempFile);
         }
     }
 
     protected void insertSome() throws IOException, GNException {
         final String TITLETOKEN = "TOKEN_FOR_TITLE";
 
-        GNClient client = createClientAndLogin();
+        GNClient client = createClientAndCheckConnection();
 
         File origFile = loadFile("metadata_token.xml");
         String orig = FileUtils.readFileToString(origFile);
@@ -127,10 +132,11 @@ public class GeonetworkSearchTest extends GeonetworkTest {
     }
 
     @Test
+    @Ignore
     public void testEmptySearch() throws Exception {
         if( ! runIntegrationTest() ) return;
 
-        GNClient client = createClientAndLogin();
+        GNClient client = createClientAndCheckConnection();
         GNSearchRequest searchRequest = new GNSearchRequest();
         searchRequest.addConfig(GNSearchRequest.Config.hitsPerPage, "5");
         searchRequest.addParam(GNSearchRequest.Param.any, "veryunlikelystringtobeplacedinsideametadata");

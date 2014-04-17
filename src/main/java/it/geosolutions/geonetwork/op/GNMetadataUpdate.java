@@ -117,7 +117,7 @@ public class GNMetadataUpdate {
      */
     private static void gnUpdateMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNLibException, GNServerException {
 
-        String serviceURL = baseURL + "/srv/en/metadata.update.finish";
+        String serviceURL = baseURL + "/srv/eng/metadata.update.finish";
         connection.setIgnoreResponseContentOnSuccess(true);
         String res = gnPost(connection, serviceURL, gnRequest);
         if(connection.getLastHttpStatus() != HttpStatus.SC_OK)

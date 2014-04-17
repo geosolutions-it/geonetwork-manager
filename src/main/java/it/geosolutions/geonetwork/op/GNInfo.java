@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2014 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,49 +25,41 @@
 package it.geosolutions.geonetwork.op;
 
 import it.geosolutions.geonetwork.util.HTTPUtils;
+import java.net.MalformedURLException;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
 
-import org.jdom.Element;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 
 /**
- * Perform a GN login.<br/>
- * GN auth is carried out via a JSESSIONID cookie returned by a successful login
- * call.<br/>
- *
- * <ul>
- * <li>Url: <tt>http://<i>server</i>:<i>port</i>/geonetwork/srv/en/xml.user.login</tt></li>
- * <li>Mime-type: <tt>application/xml</tt></li>
- * <li>Post request: <pre>{@code
- *   <?xml version="1.0" encoding="UTF-8"?>
- *   <request>
- *       <username>admin</username>
- *       <password>admin</password>
- *   </request>
- * }</pre></li>
- * </ul>
  * 
  * @author ETj (etj at geo-solutions.it)
  */
-public class GNLogin {
-    
-    private final static Logger LOGGER = Logger.getLogger(GNLogin.class);
+public class GNInfo {
+        
+    private final static Logger LOGGER = Logger.getLogger(GNInfo.class);
 
-     /*
-     * @return true if login was successful
-     * 
-     * @see <a href="http://geonetwork-opensource.org/manuals/trunk/developer/xml_services/login_xml_services.html#login-services" >GeoNetwork documentation about login</a>
-     */
-    public static boolean login(HTTPUtils connection, String serviceURL, String username, String password) {
+    // needs authentication
+    public static boolean ping(HTTPUtils connection, String serviceURL) {
+        if(LOGGER.isDebugEnabled())
+            LOGGER.debug("PING");
 
-        throw new UnsupportedOperationException("Login operation is no longer supported");
-//        String loginURL = serviceURL+"/j_spring_security_check?username="+username+"&password="+password; // sigh
-//        String out = connection.post(loginURL, (String)null, null);
-//
-//
-//        return (connection.getLastHttpStatus() == 302);
+        connection.setIgnoreResponseContentOnSuccess(true);
+        String url = serviceURL + "/srv/eng/util.ping";
+
+        try {
+            connection.get(url);
+        } catch (MalformedURLException ex) {
+            LOGGER.error(ex.getMessage());
+            return false;
+        }
+
+        if(connection.getLastHttpStatus() != HttpStatus.SC_OK) {
+            if(LOGGER.isInfoEnabled())
+                LOGGER.info("PING failed");
+            return false;
+        }
+
+        return true;
     }
 }

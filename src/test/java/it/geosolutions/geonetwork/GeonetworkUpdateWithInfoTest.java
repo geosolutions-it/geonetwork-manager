@@ -24,7 +24,6 @@
  */
 package it.geosolutions.geonetwork;
 
-import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
 import org.apache.commons.io.FileUtils;
 import org.jdom.Element;
@@ -43,6 +42,7 @@ import org.jdom.Namespace;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
+import org.junit.Ignore;
 
 /**
  *
@@ -56,6 +56,7 @@ public class GeonetworkUpdateWithInfoTest extends GeonetworkTest {
 
     
     @Test
+    @Ignore
     public void testUpdateMetadata() throws Exception {
         if( ! runIntegrationTest() ) return;
         
@@ -71,7 +72,7 @@ public class GeonetworkUpdateWithInfoTest extends GeonetworkTest {
         File file = loadFile("metadata.xml");
         assertNotNull(file);
 
-        GNClient client = createClientAndLogin();
+        GNClient client = createClientAndCheckConnection();
         long id = client.insertMetadata(cfg, file);
 
         client.setPrivileges(id, pcfg);

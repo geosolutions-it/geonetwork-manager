@@ -76,7 +76,7 @@ public class GNMetadataGet {
 
     private static String gnGetMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNServerException {
 
-        String serviceURL = baseURL + "/srv/en/xml.metadata.get";
+        String serviceURL = baseURL + "/srv/eng/xml.metadata.get";
         String resp = gnPost(connection, serviceURL, gnRequest);
         if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
             throw new GNServerException("Error retrieving metadata in GeoNetwork");

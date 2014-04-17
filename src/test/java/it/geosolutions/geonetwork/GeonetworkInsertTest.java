@@ -61,7 +61,7 @@ public class GeonetworkInsertTest extends GeonetworkTest {
         File file = loadFile("metadata.xml");
         assertNotNull(file);
 
-        GNClient client = createClientAndLogin();
+        GNClient client = createClientAndCheckConnection();
         long id = client.insertMetadata(cfg, file);
 
         client.setPrivileges(id, pcfg);
@@ -78,7 +78,7 @@ public class GeonetworkInsertTest extends GeonetworkTest {
         File file = loadFile("request.xml");
         assertNotNull(file);
         
-        GNClient client = createClientAndLogin();
+        GNClient client = createClientAndCheckConnection();
 
         // insert
         long id = client.insertRequest(file);
@@ -92,7 +92,7 @@ public class GeonetworkInsertTest extends GeonetworkTest {
     public void testBadDelete() throws Exception {
         if( ! runIntegrationTest() ) return;
 
-        GNClient client = createClientAndLogin();
+        GNClient client = createClientAndCheckConnection();
         // delete
         try {
             client.deleteMetadata(-10L);
@@ -106,7 +106,7 @@ public class GeonetworkInsertTest extends GeonetworkTest {
     public void testBadGet() throws Exception {
         if( ! runIntegrationTest() ) return;
 
-        GNClient client = createClientAndLogin();
+        GNClient client = createClientAndCheckConnection();
         // delete
         try {
             client.get(-10L);

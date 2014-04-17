@@ -472,7 +472,7 @@ public class HTTPUtils {
         if(username != null && pw != null) {
             Credentials defaultcreds = new UsernamePasswordCredentials(username, pw);
             client.getState().setCredentials(new AuthScope(u.getHost(), u.getPort()), defaultcreds);
-            client.getParams().setAuthenticationPreemptive(true); // GS2 by default always requires authentication
+            client.getParams().setAuthenticationPreemptive(true); // if we have the credentials, force them!
         } else {
             if(LOGGER.isTraceEnabled()) {
                 LOGGER.trace("Not setting credentials to access to " + url);

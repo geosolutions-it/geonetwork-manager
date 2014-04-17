@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Level;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 import org.junit.Before;
@@ -46,7 +47,7 @@ import org.junit.rules.TestName;
 public abstract class GeonetworkTest {
     private final static Logger LOGGER = Logger.getLogger(GeonetworkTest.class);
 
-    private boolean runIntegrationTest = false;
+    private boolean runIntegrationTest = true;
 
     @Rule
     public TestName _testName = new TestName();
@@ -72,11 +73,11 @@ public abstract class GeonetworkTest {
     }
     
 
-    protected GNClient createClientAndLogin() {
+    protected GNClient createClientAndCheckConnection() {
         
-        GNClient client = new GNClient(gnServiceURL);
-        boolean logged = client.login(gnUsername, gnPassword);
-        assertTrue("Could not log in", logged);
+        GNClient client = new GNClient(gnServiceURL, gnUsername, gnPassword);
+        boolean logged = client.ping();
+        assertTrue("Error pinging GN", logged);
         return client;
     }
     
@@ -84,7 +85,7 @@ public abstract class GeonetworkTest {
      * Utility method to remove all metadata in GN.
      */
     protected void removeAllMetadata() throws GNLibException, GNServerException {
-        GNClient client = createClientAndLogin();
+        GNClient client = createClientAndCheckConnection();
 
         GNSearchRequest searchRequest = new GNSearchRequest(); // empty fiter, all metadaat will be returned
         GNSearchResponse searchResponse = client.search(searchRequest);
@@ -97,10 +98,47 @@ public abstract class GeonetworkTest {
         }
 
         // check that the catalog is really empty
-        searchResponse = client.search(searchRequest);
-        assertEquals(0, searchResponse.getCount());
+        asyncSearchAssertEquals(0, client, searchRequest);
+//        searchResponse = client.search(searchRequest);
+//        assertEquals(0,searchResponse.getCount());
         LOGGER.info("All metadata removed successfully");
     }
+
+    protected void asyncSearchAssertEquals(int expected, GNClient client, GNSearchRequest searchRequest) throws GNLibException, GNServerException {
+        asyncSearchAssertEquals(expected, client, searchRequest, null);
+    }
+
+    protected void asyncSearchAssertEquals(int expected, GNClient client, File searchRequest) throws GNLibException, GNServerException {
+        asyncSearchAssertEquals(expected, client, null, searchRequest);
+    }
+
+    private void asyncSearchAssertEquals(int expected, GNClient client, GNSearchRequest searchRequest, File file) throws GNLibException, GNServerException {
+
+        final int MAXLOOP = 10;
+
+        GNSearchResponse searchResponse = null;
+
+        for (int i = 0; i < MAXLOOP; i++) {
+
+            searchResponse = 
+                    searchRequest != null ? client.search(searchRequest) :
+                    client.search(file);
+            if( searchResponse.getCount() == expected) {
+                if(i > 0)
+                    LOGGER.info("Search count passed after " + i + " loops");
+
+                return;
+            }
+
+            LOGGER.info("search failed ("+searchResponse.getCount()+"!="+expected+"), retrying...");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+            }
+        }
+        fail("Expected value " + expected + " not confirmed after " + MAXLOOP + " tries. Found " + searchResponse.getCount());
+    }
+
 
     protected GNInsertConfiguration createDefaultInsertConfiguration() {
         GNInsertConfiguration cfg = new GNInsertConfiguration();
@@ -124,5 +162,6 @@ public abstract class GeonetworkTest {
             return null;
         }    
     }
+
     
 }

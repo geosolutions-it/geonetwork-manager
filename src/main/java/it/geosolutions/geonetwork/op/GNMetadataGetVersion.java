@@ -65,7 +65,7 @@ public class GNMetadataGetVersion {
             if(LOGGER.isDebugEnabled())
                 LOGGER.debug("Retrieve metadata #"+id);
 
-            String serviceURL = gnServiceURL + "/srv/en/metadata.edit!?id="+id;
+            String serviceURL = gnServiceURL + "/srv/eng/metadata.edit!?id="+id;
             
             connection.setIgnoreResponseContentOnSuccess(false);
             String response = connection.get(serviceURL);

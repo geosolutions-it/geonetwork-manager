@@ -73,7 +73,7 @@ public class GNMetadataDelete {
     
     private static void gnDeleteMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNServerException {
 
-        String serviceURL = baseURL + "/srv/en/xml.metadata.delete";
+        String serviceURL = baseURL + "/srv/eng/xml.metadata.delete";
         gnPost(connection, serviceURL, gnRequest);
         if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
             throw new GNServerException("Error deleting metadata in GeoNetwork");

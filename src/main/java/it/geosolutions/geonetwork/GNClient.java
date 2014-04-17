@@ -29,6 +29,7 @@ import it.geosolutions.geonetwork.op.GNLogin;
 import it.geosolutions.geonetwork.op.GNMetadataInsert;
 import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
+import it.geosolutions.geonetwork.op.GNInfo;
 import it.geosolutions.geonetwork.op.GNMetadataDelete;
 import it.geosolutions.geonetwork.op.GNMetadataGet;
 import it.geosolutions.geonetwork.op.GNMetadataGetInfo;
@@ -56,20 +57,31 @@ public class GNClient {
         
     private final static Logger LOGGER = Logger.getLogger(GNClient.class);
 
-    // create stateful (we need the cookies) connection handler
-    private HTTPUtils connection = new HTTPUtils();
+    // create stateful connection handler (we need the cookies)
+    private HTTPUtils connection;
 
     private final String gnServiceURL;
 
     public GNClient(String serviceURL) {
         this.gnServiceURL = serviceURL;
+        connection = new HTTPUtils();
     }
-    
+
+    public GNClient(String serviceURL, String username, String password) {
+        this.gnServiceURL = serviceURL;
+        connection = new HTTPUtils(username, password);
+    }
+
+    public boolean ping() {
+        return GNInfo.ping(connection, gnServiceURL);
+    }
+
     /**
-     * Facade for {@link GNLogin#login(it.geosolutions.geonetwork.util.HTTPUtils, java.lang.String, java.lang.String, java.lang.String) }
+     * Kept for backward compatibility
      */
     public boolean login(String username, String password) {
-        return GNLogin.login(connection, gnServiceURL, username, password);
+        LOGGER.error("Login operation is no longer supported. Please use authenticated constructor");
+        return false;
     }
 
     /**

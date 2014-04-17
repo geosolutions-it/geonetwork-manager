@@ -75,7 +75,7 @@ public class GNMetadataSearch {
 
     private static String gnSearchMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNServerException {
 
-        String serviceURL = baseURL + "/srv/en/xml.search";
+        String serviceURL = baseURL + "/srv/eng/xml.search";
         String resp = gnPost(connection, serviceURL, gnRequest);
         if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
             throw new GNServerException("Error searching metadata in GeoNetwork");

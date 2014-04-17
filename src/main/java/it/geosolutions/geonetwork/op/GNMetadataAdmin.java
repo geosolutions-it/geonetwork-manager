@@ -86,7 +86,7 @@ public class GNMetadataAdmin {
     
     private static void gnAdminMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNServerException {
 
-        String serviceURL = baseURL + "/srv/en/metadata.admin";                
+        String serviceURL = baseURL + "/srv/eng/metadata.admin";
         gnPut(connection, serviceURL, gnRequest);
         if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
             throw new GNServerException("Error setting metadata privileges in GeoNetwork");

@@ -52,10 +52,9 @@ import org.jdom.input.SAXBuilder;
  * @author ETj (etj at geo-solutions.it)
  */
 
-@Deprecated
-public class GNMetadataGetInfo {
+public class GNMetadataGetStatus {
 
-    private final static Logger LOGGER = Logger.getLogger(GNMetadataGetInfo.class);
+    private final static Logger LOGGER = Logger.getLogger(GNMetadataGetStatus.class);
 
 
     public static class MetadataInfo {

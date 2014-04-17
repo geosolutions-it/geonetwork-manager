@@ -40,6 +40,7 @@ import java.io.File;
 import org.jdom.Namespace;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 
 /**
  *
@@ -53,6 +54,7 @@ public class GeonetworkUpdateTest extends GeonetworkTest {
 
     
     @Test
+    @Ignore
     public void testUpdateMetadata() throws Exception {
         if( ! runIntegrationTest() ) return;
         
@@ -68,7 +70,7 @@ public class GeonetworkUpdateTest extends GeonetworkTest {
         File file = loadFile("metadata.xml");
         assertNotNull(file);
 
-        GNClient client = createClientAndLogin();
+        GNClient client = createClientAndCheckConnection();
         long id = client.insertMetadata(cfg, file);
 
         client.setPrivileges(id, pcfg);
