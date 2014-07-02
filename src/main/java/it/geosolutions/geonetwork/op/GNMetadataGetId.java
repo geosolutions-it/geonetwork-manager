@@ -31,8 +31,6 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import java.net.MalformedURLException;
-import java.util.List;
-
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
 
@@ -44,30 +42,20 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 /**
- * Get the version number for a given Metadata.
- * <br/><br/>
- * GN does not provide the version seq number in an XML format, so this 
- * implementation it's quite a hack: it calls metadata.edit service in debug mode, 
- * and parses the version number from there. <br/>
- * 2 drawbacks here: 
- * - debug mode should be enabled, 
- * - the resulting document is about 1MB
- * 
- * @author ETj (etj at geo-solutions.it)
+ * Get the internal id for a given Metadata record
  */
-public class GNMetadataGetVersion {
+public class GNMetadataGetId {
         
-    private final static Logger LOGGER = Logger.getLogger(GNMetadataGetVersion.class);
+    private final static Logger LOGGER = Logger.getLogger(GNMetadataGetId.class);
     
 	public static final Namespace NS_GEONET = Namespace.getNamespace("geonet", "http://www.fao.org/geonetwork");    
-	public static final Namespace NS_GMD = Namespace.getNamespace("gmd", "http://www.isotc211.org/2005/gmd");    
 
-    public static String get(HTTPUtils connection, String gnServiceURL, Long id) throws GNLibException, GNServerException {
+	public static long get(HTTPUtils connection, String gnServiceURL, String uuid) throws GNLibException, GNServerException {
         try {
             if(LOGGER.isDebugEnabled())
-                LOGGER.debug("Retrieve metadata #"+id);
+                LOGGER.debug("Retrieve metadata: "+uuid);
 
-            String serviceURL = gnServiceURL + "/srv/eng/metadata.edit!?id="+id;
+            String serviceURL = gnServiceURL + "/srv/eng/q?_uuid="+uuid;
             
             connection.setIgnoreResponseContentOnSuccess(false);
             String response = connection.get(serviceURL);
@@ -77,44 +65,44 @@ public class GNMetadataGetVersion {
             if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
                 throw new GNServerException("Error retrieving metadata in GeoNetwork");
 
-            String version = parseVersion(response);
+            long id = parseId(response);
                         
             if(LOGGER.isDebugEnabled())
-                LOGGER.debug("Metadata " + id + " has version " + version); 
+                LOGGER.debug("Metadata " + uuid + " has id " + String.valueOf(id)); 
                         
-            return version;
+            return id;
         } catch (MalformedURLException ex) {
             throw new GNLibException("Bad URL", ex);
         }
     }
     
-    private static String parseVersion(String s) throws GNLibException {
+    private static long parseId(String s) throws GNLibException {
         try {
             SAXBuilder builder = new SAXBuilder();
             Element root = builder.build(new StringReader(s)).detachRootElement();
             
             /*
-             * <gmd:MD_Metadata 
-             *      xmlns:gmd="http://www.isotc211.org/2005/gmd" 
-             *      xmlns:gts="http://www.isotc211.org/2005/gts" 
-             *      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-             *      xmlns:gml="http://www.opengis.net/gml" 
-             *      xmlns:gco="http://www.isotc211.org/2005/gco" 
-             *      xmlns:geonet="http://www.fao.org/geonetwork" 
-             *      xsi:schemaLocation="http://www.isotc211.org/2005/gmd http://www.isotc211.org/2005/gmd/gmd.xsd">                         
+             * <response> 
+             *      <summary>
+             *      ...
+             *      </summary>
+             *      <metadata>
+             *          <id>55</id>
+             *          ...
+             *      </metadata>
+             *  </response> 
              */
             
-            Element metadata = getMetadataChild(root);
-            
-            if(metadata == null) {
-                LOGGER.error("Could not find MD_Metadata child");
+            Element response = root.getChild("metadata");
+            if(response == null) {
+                LOGGER.error("Could not find metadata child");
                 XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
                 outputter.output(root, System.out);
                 
-                throw new GNLibException("Could not find MD_Metadata child");
+                throw new GNLibException("Could not find metadata child");
             }
                         
-            Element geonetInfo = metadata.getChild("info", NS_GEONET);
+            Element geonetInfo = response.getChild("info", NS_GEONET);
             if(geonetInfo == null) {
                 LOGGER.error("Could not find geonet:info child");
                 XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
@@ -122,8 +110,8 @@ public class GNMetadataGetVersion {
                 
                 throw new GNLibException("Could not find geonet:info child");
             }
-            String version = geonetInfo.getChildText("version");
-            return version;
+            String id = geonetInfo.getChildText("id");
+            return Long.parseLong(id);
                 
         } catch (JDOMException ex) {
             LOGGER.error("Error parsing GN response: " + s);
@@ -132,17 +120,4 @@ public class GNMetadataGetVersion {
             throw new GNLibException("Error while outputting", ex);
         }
     }
-
-	private static Element getMetadataChild(Element root) {
-		@SuppressWarnings("unchecked")
-		List<Element> children = (List<Element>) root.getChildren();
-		
-		for (Element child : children) {
-			if (child.getName().equals("MD_Metadata")) {
-				return child;
-			}
-		}
-		
-		return null;
-	}
 }

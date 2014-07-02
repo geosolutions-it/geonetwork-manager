@@ -32,6 +32,7 @@ import it.geosolutions.geonetwork.exception.GNServerException;
 import it.geosolutions.geonetwork.op.GNInfo;
 import it.geosolutions.geonetwork.op.GNMetadataDelete;
 import it.geosolutions.geonetwork.op.GNMetadataGet;
+import it.geosolutions.geonetwork.op.GNMetadataGetId;
 import it.geosolutions.geonetwork.op.GNMetadataGetInfo;
 import it.geosolutions.geonetwork.op.GNMetadataGetInfo.MetadataInfo;
 import it.geosolutions.geonetwork.op.GNMetadataGetVersion;
@@ -128,6 +129,12 @@ public class GNClient {
     public void updateMetadata(long id, File metadataFile) throws GNLibException, GNServerException {
         String version = GNMetadataGetVersion.get(connection, gnServiceURL, id);
         GNMetadataUpdate.update(connection, gnServiceURL, id, version, metadataFile);
+    }
+
+    public void updateMetadata(String uuid, Element metadataElement) throws GNLibException, GNServerException {
+        long id = GNMetadataGetId.get(connection, gnServiceURL, uuid);
+        String version = GNMetadataGetVersion.get(connection, gnServiceURL, id);
+        GNMetadataUpdate.update(connection, gnServiceURL, id, version, metadataElement);  
     }
 
     public void updateMetadata(long id, int version, File metadataFile) throws GNLibException, GNServerException {
