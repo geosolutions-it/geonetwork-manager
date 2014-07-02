@@ -54,13 +54,21 @@ public class GNMetadataUpdate {
     public static void update(HTTPUtils connection, String gnServiceURL, Long id, String version, File inputFile)  throws GNLibException, GNServerException {
         if(LOGGER.isInfoEnabled())
             LOGGER.info("Using metadata file " + inputFile);
-        Element updateRequest = buildUpdateRequest(inputFile, id, version);
-
-        // updatethe metadata
-        LOGGER.debug("Updating metadata " + id + " version " + version);
-        gnUpdateMetadata(connection, gnServiceURL, updateRequest);
-        LOGGER.info("Updated metadata " + id + " version " + version);
+        Element metadataFromFile = parseFile(inputFile);
+        update(connection, gnServiceURL, id, version, metadataFromFile);
     }
+
+    /**
+    *
+    */
+    public static void update(HTTPUtils connection, String gnServiceURL, Long id, String version, Element inputElement)  throws GNLibException, GNServerException {
+       Element updateRequest = buildUpdateRequest(inputElement, id, version); 
+
+       // update the metadata
+       LOGGER.debug("Updating metadata " + id + " version " + version);
+       gnUpdateMetadata(connection, gnServiceURL, updateRequest);
+       LOGGER.info("Updated metadata " + id + " version " + version);
+   }
 
     /**
      * Creates a Request document for the geonetwork <tt>metadata.update</tt> operation.
@@ -73,14 +81,12 @@ public class GNMetadataUpdate {
      * <li>data (mandatory) Contains the metadata record</li>
      * </ul>
      */
-    private static Element buildUpdateRequest(File inputFile, Long id, String version)  throws GNLibException, GNServerException {
+    private static Element buildUpdateRequest(Element metadataElement, Long id, String version)  throws GNLibException, GNServerException {
         if(LOGGER.isDebugEnabled()) 
             LOGGER.debug("Compiling request document");
         
-        Element metadataFromFile = parseFile(inputFile);
-
         XMLOutputter outputter = new XMLOutputter(Format.getRawFormat());
-        CDATA cdata = new CDATA(outputter.outputString(metadataFromFile)); // CDATA format is required by GN
+        CDATA cdata = new CDATA(outputter.outputString(metadataElement)); // CDATA format is required by GN
         
         Element request = new Element("request");
         request.addContent(new Element("id").setText(String.valueOf(id)));
@@ -94,7 +100,7 @@ public class GNMetadataUpdate {
      * Insert a metadata in GN.<br/>
      * 
      * <ul>
-     * <li>Url: <tt>http://<i>server</i>:<i>port</i>/geonetwork/srv/en/metadata.update</tt></li>
+     * <li>Url: <tt>http://<i>server</i>:<i>port</i>/geonetwork/srv/en/metadata.update.finish</tt></li>
      * <li>Mime-type: <tt>application/xml</tt></li>
      * <li>Post request: <pre>{@code 
      * 
