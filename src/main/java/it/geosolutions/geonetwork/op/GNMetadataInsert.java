@@ -66,7 +66,7 @@ public class GNMetadataInsert {
 
         // insert the metadata
         LOGGER.debug("Creating metadata");
-        long metadataId = gnInsertMetadata(connection, gnServiceURL, insertRequest);
+        long metadataId = gnInsertMetadata(connection, gnServiceURL, insertRequest, cfg.getEncoding());
         LOGGER.info("Created metadata " + metadataId);
         return metadataId;
     }
@@ -84,7 +84,7 @@ public class GNMetadataInsert {
 
         // insert the metadata
         LOGGER.debug("Creating metadata");
-        long metadataId = gnInsertMetadata(connection, gnServiceURL, insertRequest);
+        long metadataId = gnInsertMetadata(connection, gnServiceURL, insertRequest, null);
         LOGGER.info("Created metadata " + metadataId);
         return metadataId;
     }
@@ -152,10 +152,10 @@ public class GNMetadataInsert {
      * 
      * @see <a href="http://geonetwork-opensource.org/latest/developers/xml_services/metadata_xml_services.html#insert-metadata-metadata-insert" >GeoNetwork documentation about inserting metadata</a>
      */
-    private static long gnInsertMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNLibException, GNServerException {
+    private static long gnInsertMetadata(HTTPUtils connection, String baseURL, final Element gnRequest, String encoding) throws GNLibException, GNServerException {
 
         String serviceURL = baseURL + "/srv/eng/xml.metadata.insert";
-        String res = gnPut(connection, serviceURL, gnRequest);
+        String res = gnPut(connection, serviceURL, gnRequest, encoding);
         if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
             throw new GNServerException("Error inserting metadata in GeoNetwork (HTTP code "+connection.getLastHttpStatus()+")");
         
@@ -168,13 +168,13 @@ public class GNMetadataInsert {
         }
     }
     
-    private static String gnPut(HTTPUtils connection, String serviceURL, final Element gnRequest) throws GNLibException, GNServerException {
+    private static String gnPut(HTTPUtils connection, String serviceURL, final Element gnRequest, String encoding) throws GNLibException, GNServerException {
         
         final XMLOutputter outputter = new XMLOutputter(Format.getCompactFormat());
         String s = outputter.outputString(gnRequest);
         
         connection.setIgnoreResponseContentOnSuccess(false);
-        String res = connection.postXml(serviceURL, s);
+        String res = connection.postXml(serviceURL, s, encoding);
 //        if(LOGGER.isInfoEnabled())
 //            LOGGER.info(serviceURL + " returned --> " + res);
         return res;

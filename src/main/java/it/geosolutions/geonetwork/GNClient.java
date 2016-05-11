@@ -125,13 +125,21 @@ public class GNClient {
         GNMetadataDelete.delete(connection, gnServiceURL, id);
     }
     
-    public void updateMetadata(long id, File metadataFile) throws GNLibException, GNServerException {
+    public void updateMetadata(long id, File metadataFile, String encoding) throws GNLibException, GNServerException {
         String version = GNMetadataGetVersion.get(connection, gnServiceURL, id);
-        GNMetadataUpdate.update(connection, gnServiceURL, id, version, metadataFile);
+        GNMetadataUpdate.update(connection, gnServiceURL, id, version, metadataFile, encoding);
+    }
+
+    public void updateMetadata(long id, int version, File metadataFile, String encoding) throws GNLibException, GNServerException {
+        GNMetadataUpdate.update(connection, gnServiceURL, id, Integer.toString(version), metadataFile, encoding);
+    }
+    
+    public void updateMetadata(long id, File metadataFile) throws GNLibException, GNServerException {
+        updateMetadata(id, metadataFile, null);
     }
 
     public void updateMetadata(long id, int version, File metadataFile) throws GNLibException, GNServerException {
-        GNMetadataUpdate.update(connection, gnServiceURL, id, Integer.toString(version), metadataFile);
+    	updateMetadata(id, version, metadataFile, null);
     }
 
     /**

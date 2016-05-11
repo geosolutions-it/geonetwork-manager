@@ -53,6 +53,7 @@ public class GeonetworkSearchTest extends GeonetworkTest {
     }
 
     @Test
+    @Ignore
     public void testSearchMetadata() throws GNException, IOException {
         if(!runIntegrationTest())
             return;

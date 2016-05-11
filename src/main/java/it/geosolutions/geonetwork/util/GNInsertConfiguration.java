@@ -56,6 +56,8 @@ public class GNInsertConfiguration {
      * validate: Indicates if the metadata should be validated before inserting in the catalog. Values: on, off (default)    
      */    
     private Boolean validate;
+    
+    private String encoding = "UTF-8";
 
     public GNInsertConfiguration() {
     }
@@ -65,6 +67,14 @@ public class GNInsertConfiguration {
         this.category = category;
         this.styleSheet = styleSheet;
         this.validate = validate;
+    }
+    
+    public GNInsertConfiguration(String group, String category, String styleSheet, Boolean validate, String encoding) {
+        this.group = group;
+        this.category = category;
+        this.styleSheet = styleSheet;
+        this.validate = validate;
+        this.encoding = encoding;
     }
 
     public String getCategory() {
@@ -97,5 +107,15 @@ public class GNInsertConfiguration {
 
     public void setValidate(Boolean validate) {
         this.validate = validate;
-    }    
+    }
+
+	public String getEncoding() {
+		return encoding;
+	}
+
+	public void setEncoding(String encoding) {
+		this.encoding = encoding;
+	}    
+    
+    
 }
