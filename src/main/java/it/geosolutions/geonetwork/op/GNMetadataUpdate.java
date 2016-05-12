@@ -49,6 +49,13 @@ public class GNMetadataUpdate {
     private final static Logger LOGGER = Logger.getLogger(GNMetadataUpdate.class);
 
     /**
+    *
+    */
+   public static void update(HTTPUtils connection, String gnServiceURL, Long id, String version, File inputFile)  throws GNLibException, GNServerException {
+       update(connection, gnServiceURL, id, version, inputFile, null);
+   }
+    
+    /**
      *
      */
     public static void update(HTTPUtils connection, String gnServiceURL, Long id, String version, File inputFile, String encoding)  throws GNLibException, GNServerException {

@@ -267,6 +267,7 @@ public class HTTPUtils {
      * @param url       The URL where to connect to.
      * @param content   The content to be sent as a String.
      * @param contentType The content-type to advert in the POST.
+     * @param encoding The encode to use for the body in the POST.
      * @return          The HTTP response as a String if the HTTP response code was 200 (OK).
      * @throws MalformedURLException
      * @return the HTTP response or <TT>null</TT> on errors.
@@ -278,6 +279,20 @@ public class HTTPUtils {
             LOGGER.error("Cannot POST " + url, ex);
             return null;
         }
+    }
+    
+    /**
+     * POSTs a String to the given URL.
+     *
+     * @param url       The URL where to connect to.
+     * @param content   The content to be sent as a String.
+     * @param contentType The content-type to advert in the POST.
+     * @return          The HTTP response as a String if the HTTP response code was 200 (OK).
+     * @throws MalformedURLException
+     * @return the HTTP response or <TT>null</TT> on errors.
+     */
+    public  String post(String url, String content, String contentType) {
+        return post(url, content, contentType, null);
     }
     
     /**
