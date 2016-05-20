@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2012 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,41 +22,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geonetwork;
+package it.geosolutions.geonetwork.online;
 
-import it.geosolutions.geonetwork.exception.GNServerException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
+import java.io.File;
+import java.util.EnumSet;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
-import it.geosolutions.geonetwork.op.GNMetadataGetVersion;
+import org.junit.Test;
+
+import it.geosolutions.geonetwork.GNClient;
+import it.geosolutions.geonetwork.exception.GNServerException;
+import it.geosolutions.geonetwork.op.GNMetadataGetInfo;
+import it.geosolutions.geonetwork.op.GNMetadataGetInfo.MetadataInfo;
 import it.geosolutions.geonetwork.op.GNMetadataUpdate;
-import java.util.EnumSet;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNPriv;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
-import org.apache.log4j.Logger;
-import java.io.File;
-import org.jdom.Namespace;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Ignore;
 
 /**
  *
  * @author ETj (etj at geo-solutions.it)
  */
-public class GeonetworkUpdateTest extends GeonetworkTest {
-    private final static Logger LOGGER = Logger.getLogger(GeonetworkUpdateTest.class);
+public class GeonetworkUpdateWithInfoTest extends GeonetworkTest {
+    private final static Logger LOGGER = Logger.getLogger(GeonetworkUpdateWithInfoTest.class);
     
-    public GeonetworkUpdateTest() {
+    public GeonetworkUpdateWithInfoTest() {
     }
 
     
     @Test
-    @Ignore
+    //@Ignore
     public void testUpdateMetadata() throws Exception {
-        if( ! runIntegrationTest() ) return;
         
         GNInsertConfiguration cfg = createDefaultInsertConfiguration();
 
@@ -75,12 +81,45 @@ public class GeonetworkUpdateTest extends GeonetworkTest {
 
         client.setPrivileges(id, pcfg);
 
-        String version = GNMetadataGetVersion.get(client.getConnection(), gnServiceURL, id);
-        LOGGER.info("Version is " + version);
-                
-        assertNotNull(version);
-        assertEquals("2", version); // the md has just been created
+        //=== using the custom service
+        MetadataInfo info = null;
+
+        // first try: the service is installed?
+        try {
+            info = GNMetadataGetInfo.get(client.getConnection(), gnServiceURL, id, false);
+            LOGGER.info("Basic metadataInfo by id is " + info);
+            assertNotNull(info);
+            assertNull(info.getVersion());
+            assertEquals(id, info.getId());
+        } catch (GNServerException ex) {
+            //It looks like geonetwork return 403 in case of service is not found...
+            if(ex.getHttpCode() == 404 || ex.getHttpCode() == 403) {
+                LOGGER.error("metadata.info.get is not installed on GeoNetwork 2. Skipping test.");
+                assumeTrue(true);
+                return;
+            } else
+                throw ex;
+        } catch (Exception ex) {
+            LOGGER.error("metadata.info.get doesn't work on GeoNetwork 3. Skipping test...");
+            assumeTrue(true);
+            return;
+           
+        }
         
+        info = GNMetadataGetInfo.get(client.getConnection(), gnServiceURL, info.getUuid(), false);
+        LOGGER.info("Basic metadataInfo by UUID is " + info);
+        assertNotNull(info);
+        assertNull(info.getVersion());
+        assertEquals(id, info.getId());
+
+        info = GNMetadataGetInfo.get(client.getConnection(), gnServiceURL, id, true);
+        LOGGER.info("MetadataInfo is " + info);
+                
+        assertNotNull(info);
+        assertEquals(Integer.valueOf(2), info.getVersion()); // the md has just been created
+        assertEquals(id, info.getId());
+
+
         Element md = client.get(id);
 //        XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
 //        outputter.output(md, System.out);
@@ -92,12 +131,12 @@ public class GeonetworkUpdateTest extends GeonetworkTest {
             chstr.setText(UPDATED_TEXT);
         }
         
-        File tempFile = File.createTempFile("gnm_update", ".xml");
+        File tempFile = File.createTempFile("gnm_info_update", ".xml");
         FileUtils.forceDeleteOnExit(tempFile);
         XMLOutputter fileOutputter = new XMLOutputter(Format.getCompactFormat());
         FileUtils.writeStringToFile(tempFile, fileOutputter.outputString(md));
         
-        GNMetadataUpdate.update(client.getConnection(), gnServiceURL, id, version, tempFile, null);
+        GNMetadataUpdate.update(client.getConnection(), gnServiceURL, id, Integer.toString(info.getVersion()), tempFile, null);
         
         {
             Element md2 = client.get(id);
@@ -105,11 +144,12 @@ public class GeonetworkUpdateTest extends GeonetworkTest {
             assertEquals(UPDATED_TEXT, chstr.getText());            
         }
 
-        String version3 = GNMetadataGetVersion.get(client.getConnection(), gnServiceURL, id);
-        LOGGER.info("Version is " + version3);
+        info = GNMetadataGetInfo.get(client.getConnection(), gnServiceURL, id, true);
+//        String version3 = GNMetadataGetVersion.get(client.getConnection(), gnServiceURL, id);
+        LOGGER.info("New MetadataInfo is " + info);
                 
-        assertNotNull(version3);
-        assertEquals("4", version3); // the md has been updated once
+        assertNotNull(info.getVersion());
+        assertEquals(Integer.valueOf(4), info.getVersion()); // the md has been updated once
         
         
         // try bad version number
@@ -122,30 +162,6 @@ public class GeonetworkUpdateTest extends GeonetworkTest {
                 
 //        client.deleteMetadata(id);
     }
-
-    private Element getTitleElement(Element metadata) {
-        //    xmlns:gmd="http://www.isotc211.org/2005/gmd"
-        //    xmlns:gco="http://www.isotc211.org/2005/gco"        
-        //            
-        //    <gmd:identificationInfo>
-        //      <gmd:MD_DataIdentification>
-        //         <gmd:citation>
-        //            <gmd:CI_Citation>
-        //               <gmd:title>
-        //                  <gco:CharacterString>TEST GeoBatch Action: GeoNetwork</gco:CharacterString>
-        final Namespace NS_GMD = Namespace.getNamespace("gmd","http://www.isotc211.org/2005/gmd");
-        final Namespace NS_GCO = Namespace.getNamespace("gco","http://www.isotc211.org/2005/gco");
-
-        Element idInfo = metadata.getChild("identificationInfo", NS_GMD);        
-        Element dataId = idInfo.getChild("MD_DataIdentification", NS_GMD);
-        Element cit    = dataId.getChild("citation", NS_GMD);
-        Element cicit  = cit.getChild("CI_Citation", NS_GMD);
-        Element title  = cicit.getChild("title", NS_GMD);
-        Element chstr  = title.getChild("CharacterString", NS_GCO);
-        
-        return chstr;
-    }
-    
 }
 
 
