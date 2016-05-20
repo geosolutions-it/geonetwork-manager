@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,61 +22,64 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geonetwork;
+package it.geosolutions.geonetwork.online;
 
-import it.geosolutions.geonetwork.exception.GNLibException;
-import it.geosolutions.geonetwork.exception.GNServerException;
-import it.geosolutions.geonetwork.util.GNSearchRequest;
-import it.geosolutions.geonetwork.util.GNSearchResponse;
-import it.geosolutions.geonetwork.util.GNInsertConfiguration;
-import org.apache.log4j.Logger;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.logging.Level;
-import static org.junit.Assert.*;
-import static org.junit.Assume.*;
+
+import org.apache.log4j.Logger;
+import org.jdom.Element;
+import org.jdom.Namespace;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+
+import it.geosolutions.geonetwork.GN2Client;
+import it.geosolutions.geonetwork.GN3Client;
+import it.geosolutions.geonetwork.GNClient;
+import it.geosolutions.geonetwork.exception.GNLibException;
+import it.geosolutions.geonetwork.exception.GNServerException;
+import it.geosolutions.geonetwork.util.GNInsertConfiguration;
+import it.geosolutions.geonetwork.util.GNSearchRequest;
+import it.geosolutions.geonetwork.util.GNSearchResponse;
 
 /**
  *
  * @author ETj (etj at geo-solutions.it)
  */
-public abstract class GeonetworkTest {
+public abstract class GeonetworkTest extends GeonetworkOnlineTests{
     private final static Logger LOGGER = Logger.getLogger(GeonetworkTest.class);
-
-    private boolean runIntegrationTest = true;
 
     @Rule
     public TestName _testName = new TestName();
-
-    protected static final String gnServiceURL = "http://localhost:8080/geonetwork";
-    protected static final String gnUsername = "admin";
-    protected static final String gnPassword = "admin";
     
     public GeonetworkTest() {
     }
 
     @Before 
     public void setUp() throws Exception {
-//        super.setUp();
         LOGGER.info("====================> " + _testName.getMethodName());
+        removeAllMetadata();
     }
-    
-    protected boolean runIntegrationTest() {
-        if(! runIntegrationTest)
-            LOGGER.info("Skipping test " +  _testName.getMethodName());
-        assumeTrue(runIntegrationTest);
-        return runIntegrationTest;
-    }
-    
 
     protected GNClient createClientAndCheckConnection() {
-        
-        GNClient client = new GNClient(gnServiceURL, gnUsername, gnPassword);
-        boolean logged = client.ping();
+        GNClient client = null;
+        switch (gnVersion) {
+        case 2:
+            client = new GN2Client(gnServiceURL, gnUsername, gnPassword);
+            break;
+        case 3:
+            client = new GN3Client(gnServiceURL, gnUsername, gnPassword);
+            break;
+        default:
+            client = null;
+            break;
+        }
+        boolean logged = (client == null)? false : client.ping();
         assertTrue("Error pinging GN", logged);
         return client;
     }
@@ -138,8 +141,7 @@ public abstract class GeonetworkTest {
         }
         fail("Expected value " + expected + " not confirmed after " + MAXLOOP + " tries. Found " + searchResponse.getCount());
     }
-
-
+    
     protected GNInsertConfiguration createDefaultInsertConfiguration() {
         GNInsertConfiguration cfg = new GNInsertConfiguration();
         
@@ -163,5 +165,26 @@ public abstract class GeonetworkTest {
         }    
     }
 
-    
+    protected Element getTitleElement(Element metadata) {
+        //    xmlns:gmd="http://www.isotc211.org/2005/gmd"
+        //    xmlns:gco="http://www.isotc211.org/2005/gco"        
+        //            
+        //    <gmd:identificationInfo>
+        //      <gmd:MD_DataIdentification>
+        //         <gmd:citation>
+        //            <gmd:CI_Citation>
+        //               <gmd:title>
+        //                  <gco:CharacterString>TEST GeoBatch Action: GeoNetwork</gco:CharacterString>
+        final Namespace NS_GMD = Namespace.getNamespace("gmd","http://www.isotc211.org/2005/gmd");
+        final Namespace NS_GCO = Namespace.getNamespace("gco","http://www.isotc211.org/2005/gco");
+
+        Element idInfo = metadata.getChild("identificationInfo", NS_GMD);        
+        Element dataId = idInfo.getChild("MD_DataIdentification", NS_GMD);
+        Element cit    = dataId.getChild("citation", NS_GMD);
+        Element cicit  = cit.getChild("CI_Citation", NS_GMD);
+        Element title  = cicit.getChild("title", NS_GMD);
+        Element chstr  = title.getChild("CharacterString", NS_GCO);
+        
+        return chstr;
+    }
 }

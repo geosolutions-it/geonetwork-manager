@@ -248,7 +248,23 @@
             <version>2.5.6.SEC02</version>
             <scope>test</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-sample-data</artifactId>
+            <version>14.0</version>
+            <scope>test</scope>
+        </dependency>
+        
     </dependencies>
+    
+    <repositories>
+        <repository>
+            <id>boundless</id>
+            <name>Boundless Maven Repository</name>
+            <url>http://repo.boundlessgeo.com/main</url>
+        </repository>
+    </repositories>
 
 </project>
 

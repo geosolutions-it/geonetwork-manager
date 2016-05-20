@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2014 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,23 +24,23 @@
  */
 package it.geosolutions.geonetwork.io;
 
-import it.geosolutions.geonetwork.GNClient;
-import it.geosolutions.geonetwork.exception.GNLibException;
-import it.geosolutions.geonetwork.exception.GNServerException;
-import it.geosolutions.geonetwork.util.GNInsertConfiguration;
-
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import it.geosolutions.geonetwork.GN2Client;
+import it.geosolutions.geonetwork.exception.GNLibException;
+import it.geosolutions.geonetwork.exception.GNServerException;
+import it.geosolutions.geonetwork.util.GNInsertConfiguration;
+
 /**
  * @author alessio.fabiani
  * 
  */
-public class GNMetadataPublisher {
+public class GN2MetadataPublisher {
 
-    private final static Logger LOGGER = Logger.getLogger(GNMetadataPublisher.class);
+    private final static Logger LOGGER = Logger.getLogger(GN2MetadataPublisher.class);
 
     /**
      * @param args
@@ -63,7 +63,7 @@ public class GNMetadataPublisher {
                 + gnUsername + "]");
 
         // Create a GeoNetwork client pointing to the GeoNetwork service
-        GNClient client = new GNClient(gnServiceURL);
+        GN2Client client = new GN2Client(gnServiceURL);
 
         // Perform a login into GN
         boolean logged = client.login(gnUsername, gnPassword);

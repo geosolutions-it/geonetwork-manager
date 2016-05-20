@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,17 +22,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geonetwork;
+package it.geosolutions.geonetwork.online;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import java.io.File;
 import java.util.EnumSet;
+
+import org.apache.log4j.Logger;
+import org.jdom.Element;
+import org.junit.Test;
+
+import it.geosolutions.geonetwork.GNClient;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNPriv;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
-import org.apache.log4j.Logger;
-import java.io.File;
-import org.jdom.Element;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import it.geosolutions.geonetwork.util.GNSearchRequest;
+import it.geosolutions.geonetwork.util.GNSearchResponse;
 
 /**
  *
@@ -47,7 +54,6 @@ public class GeonetworkInsertTest extends GeonetworkTest {
     
     @Test
     public void testInsertPureMetadata() throws Exception {
-        if( ! runIntegrationTest() ) return;
         
         GNInsertConfiguration cfg = createDefaultInsertConfiguration();
 
@@ -69,11 +75,14 @@ public class GeonetworkInsertTest extends GeonetworkTest {
         Element md = client.get(id);
 
         client.deleteMetadata(id);
+        
+        GNSearchRequest searchRequest = new GNSearchRequest();
+        searchRequest.addParam(GNSearchRequest.Param.title, getTitleElement(md).getText());
+        asyncSearchAssertEquals(0, client, searchRequest);
     }
 
     @Test
     public void testInsertRequest() throws Exception {
-        if( ! runIntegrationTest() ) return;
                 
         File file = loadFile("request.xml");
         assertNotNull(file);
@@ -86,11 +95,14 @@ public class GeonetworkInsertTest extends GeonetworkTest {
         Element md = client.get(id);
         // delete
         client.deleteMetadata(id);
+        
+        GNSearchRequest searchRequest = new GNSearchRequest();
+        searchRequest.addParam(GNSearchRequest.Param.title, getTitleElement(md).getText());
+        asyncSearchAssertEquals(0, client, searchRequest);
     }
 
     @Test
     public void testBadDelete() throws Exception {
-        if( ! runIntegrationTest() ) return;
 
         GNClient client = createClientAndCheckConnection();
         // delete
@@ -104,7 +116,6 @@ public class GeonetworkInsertTest extends GeonetworkTest {
 
     @Test
     public void testBadGet() throws Exception {
-        if( ! runIntegrationTest() ) return;
 
         GNClient client = createClientAndCheckConnection();
         // delete
