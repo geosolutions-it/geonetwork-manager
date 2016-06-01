@@ -49,16 +49,23 @@ public class GNMetadataUpdate {
     private final static Logger LOGGER = Logger.getLogger(GNMetadataUpdate.class);
 
     /**
+    *
+    */
+   public static void update(HTTPUtils connection, String gnServiceURL, Long id, String version, File inputFile)  throws GNLibException, GNServerException {
+       update(connection, gnServiceURL, id, version, inputFile, null);
+   }
+    
+    /**
      *
      */
-    public static void update(HTTPUtils connection, String gnServiceURL, Long id, String version, File inputFile)  throws GNLibException, GNServerException {
+    public static void update(HTTPUtils connection, String gnServiceURL, Long id, String version, File inputFile, String encoding)  throws GNLibException, GNServerException {
         if(LOGGER.isInfoEnabled())
             LOGGER.info("Using metadata file " + inputFile);
         Element updateRequest = buildUpdateRequest(inputFile, id, version);
 
         // updatethe metadata
         LOGGER.debug("Updating metadata " + id + " version " + version);
-        gnUpdateMetadata(connection, gnServiceURL, updateRequest);
+        gnUpdateMetadata(connection, gnServiceURL, updateRequest, encoding);
         LOGGER.info("Updated metadata " + id + " version " + version);
     }
 
@@ -115,22 +122,22 @@ public class GNMetadataUpdate {
      *      * 
      * @see <a href="http://geonetwork-opensource.org/latest/developers/xml_services/metadata_xml_services.html#insert-metadata-metadata-insert" >GeoNetwork documentation about inserting metadata</a>
      */
-    private static void gnUpdateMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNLibException, GNServerException {
+    private static void gnUpdateMetadata(HTTPUtils connection, String baseURL, final Element gnRequest, String encoding) throws GNLibException, GNServerException {
 
         String serviceURL = baseURL + "/srv/eng/metadata.update.finish";
         connection.setIgnoreResponseContentOnSuccess(true);
-        String res = gnPost(connection, serviceURL, gnRequest);
+        String res = gnPost(connection, serviceURL, gnRequest, encoding);
         if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
             throw new GNServerException("Error updating metadata in GeoNetwork (HTTP code "+connection.getLastHttpStatus()+")");        
     }
     
-    private static String gnPost(HTTPUtils connection, String serviceURL, final Element gnRequest) throws GNLibException, GNServerException {
+    private static String gnPost(HTTPUtils connection, String serviceURL, final Element gnRequest, String encoding) throws GNLibException, GNServerException {
         
         final XMLOutputter outputter = new XMLOutputter(Format.getCompactFormat());
         String s = outputter.outputString(gnRequest);
         
         connection.setIgnoreResponseContentOnSuccess(false);
-        String res = connection.postXml(serviceURL, s);
+        String res = connection.postXml(serviceURL, s, encoding);
 //        if(LOGGER.isInfoEnabled())
 //            LOGGER.info(serviceURL + " returned --> " + res);
         return res;

@@ -217,7 +217,21 @@ public class HTTPUtils {
      * @return the HTTP response or <TT>null</TT> on errors.
      */
     public  String postXml(String url, String content) {
-        return post(url, content, xmlContentType);
+        return post(url, content, xmlContentType, null);
+    }
+    
+    /**
+     * POSTs a String representing an XML document to the given URL.
+     *
+     * @param url       The URL where to connect to.
+     * @param content   The XML content to be sent as a String.
+     * @param encoding   The encoding used to parse the string.
+     * @return          The HTTP response as a String if the HTTP response code was 200 (OK).
+     * @throws MalformedURLException
+     * @return the HTTP response or <TT>null</TT> on errors.
+     */
+    public  String postXml(String url, String content, String encoding) {
+        return post(url, content, xmlContentType, encoding);
     }
     
     /**
@@ -253,17 +267,32 @@ public class HTTPUtils {
      * @param url       The URL where to connect to.
      * @param content   The content to be sent as a String.
      * @param contentType The content-type to advert in the POST.
+     * @param encoding The encode to use for the body in the POST.
+     * @return          The HTTP response as a String if the HTTP response code was 200 (OK).
+     * @throws MalformedURLException
+     * @return the HTTP response or <TT>null</TT> on errors.
+     */
+    public  String post(String url, String content, String contentType, String encoding) {
+        try {
+            return post(url, new StringRequestEntity(content, contentType, encoding));
+        } catch (UnsupportedEncodingException ex) {
+            LOGGER.error("Cannot POST " + url, ex);
+            return null;
+        }
+    }
+    
+    /**
+     * POSTs a String to the given URL.
+     *
+     * @param url       The URL where to connect to.
+     * @param content   The content to be sent as a String.
+     * @param contentType The content-type to advert in the POST.
      * @return          The HTTP response as a String if the HTTP response code was 200 (OK).
      * @throws MalformedURLException
      * @return the HTTP response or <TT>null</TT> on errors.
      */
     public  String post(String url, String content, String contentType) {
-        try {
-            return post(url, new StringRequestEntity(content, contentType, null));
-        } catch (UnsupportedEncodingException ex) {
-            LOGGER.error("Cannot POST " + url, ex);
-            return null;
-        }
+        return post(url, content, contentType, null);
     }
     
     /**

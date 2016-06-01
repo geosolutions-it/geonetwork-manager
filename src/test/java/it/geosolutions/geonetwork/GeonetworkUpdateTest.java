@@ -97,7 +97,7 @@ public class GeonetworkUpdateTest extends GeonetworkTest {
         XMLOutputter fileOutputter = new XMLOutputter(Format.getCompactFormat());
         FileUtils.writeStringToFile(tempFile, fileOutputter.outputString(md));
         
-        GNMetadataUpdate.update(client.getConnection(), gnServiceURL, id, version, tempFile);
+        GNMetadataUpdate.update(client.getConnection(), gnServiceURL, id, version, tempFile, null);
         
         {
             Element md2 = client.get(id);
@@ -114,7 +114,7 @@ public class GeonetworkUpdateTest extends GeonetworkTest {
         
         // try bad version number
         try {
-            GNMetadataUpdate.update(client.getConnection(), gnServiceURL, id, "9999", tempFile);
+            GNMetadataUpdate.update(client.getConnection(), gnServiceURL, id, "9999", tempFile, null);
             fail("Bad version exception not trapped");
         } catch(GNServerException e) {
             LOGGER.info("Bad version number error trapped properly ("+e.getMessage()+")");
