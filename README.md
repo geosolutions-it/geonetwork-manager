@@ -1,9 +1,9 @@
 **geonetwork-manager** is a Java library to interact with [GeoNetwork Opensource](http://geonetwork-opensource.org/). 
 Its aim is to provide a simple Java interface to create, delete, administer the catalog entries programmatically.
 
-## Features
+Since version 1.4 (currently on the master branch) **geonetwork-manager** is also compatible with GeoNetwork v3.0.x.
 
-The currently supported operations are:
+The currently **supported operations** are:
 
 * insert metadata
 * search metadata
@@ -12,15 +12,35 @@ The currently supported operations are:
 * delete metadata
 * change metadata permissions
 
-## Build
+## Use the library
 
-clone the repo
+In order to use the **geonetwork-manager** library you can add it as a dependency in your [maven](https://maven.apache.org/) project:
+
+        <dependency>
+            <groupId>it.geosolutions</groupId>
+            <artifactId>geonetwork-manager</artifactId>
+            <version>1.4-SNAPSHOT</version>
+        </dependency>
+
+using the [GeoSolutions](http://www.geo-solutions.it/) maven repository:
+
+        <repository>
+            <id>geosolutions</id>
+            <name>GeoSolutions Repository</name>
+            <url>http://maven.geo-solutions.it</url>
+        </repository>
+
+If you need, you can download the `.jar` files for any available version from [here](http://maven.geo-solutions.it/it/geosolutions/geonetwork-manager/).
+
+## Build the library
+
+Clone the geonetwork-manager repo
 
 ```
 ~$ git clone git@github.com:geosolutions-it/geonetwork-manager.git
 ```
 
-then from the root of the repo, run
+then from the root dir of the cloned repository, run
 
 ```
 ~/geonetwork-manager$ mvn clean install
@@ -34,9 +54,7 @@ in your project and see some [code usage examples](https://github.com/geosolutio
 
 ## Online tests
 
-Long story short, read [How to run the online test suite](#how-to-run-the-online-test-suite)
-
-In order to run the geonetwork-manager **online test suite** a running geonetwork test instance is required.
+In order to run the geonetwork-manager **online test suite**, a running geonetwork test instance is required.
 The tests are destructive, so **DO NOT** use a production instance with a real metadata catalog otherwise the stored metadata will be lost.
 
 By default, only unit tests are executed in the build process. 
@@ -72,7 +90,8 @@ On **Linux**
 
 1. Startup, remotely or locally, a GeoNetwork `2.10` or `3.0.x` test instance
 1. Run the test for the first time via maven or eclipse
-1. Open the template fixture file generated and fill the `url`, `version`, `username`, and `password` fields with the information of the test instance
+1. Edit the template fixture file generated and change the `url`, `version`, `username`, and `password` fields with the information related to the test instance
+1. `version` should be either `2` or `3`
 1. Rename the fixture file removing the ``.example`` suffix
 1. Run the tests again; this time the online tests will be executed and reported as junit tests.
 
