@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2012 GeoSolutions S.A.S.
+ *  Copyright (C) 2007 - 2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -98,7 +98,7 @@ public class GeonetworkUpdateWithInfoTest extends GeonetworkTest {
                 assumeTrue(true);
                 return;
             } else
-                throw ex;
+                throw new Exception("Unexpected code " + ex.getHttpCode(), ex);
         } catch (Exception ex) {
             LOGGER.error("metadata.info.get doesn't work on GeoNetwork 3. Skipping test...");
             assumeTrue(true);

@@ -24,9 +24,6 @@
  */
 package it.geosolutions.geonetwork.online;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.EnumSet;
@@ -39,11 +36,11 @@ import org.jdom.output.XMLOutputter;
 import org.junit.Test;
 
 import it.geosolutions.geonetwork.GNClient;
-import it.geosolutions.geonetwork.exception.GNServerException;
-import it.geosolutions.geonetwork.op.GNMetadataUpdate;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNPriv;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
@@ -57,7 +54,6 @@ public class GeonetworkUpdateTest extends GeonetworkTest {
 
     
     @Test
-    //@Ignore
     public void testUpdateMetadata() throws Exception {
         
         GNInsertConfiguration cfg = createDefaultInsertConfiguration();

@@ -47,7 +47,7 @@ public class GeonetworkOnlineTests extends OnlineTestSupport{
     
     @Override
     protected String getFixtureId() {
-        return "geonetwork.params";
+        return "geonetwork-manager.params";
     }
     
     @Override
@@ -62,7 +62,7 @@ public class GeonetworkOnlineTests extends OnlineTestSupport{
         catch(Exception e){
             throw new IllegalArgumentException("Invalid value for the Geonetwork version. The value provided in the fixture file is: '" + gnVersionAsString + "'");
         }
-        gnServiceURL = (String)getFixture().get("URL");
+        gnServiceURL = (String)getFixture().get("url");
         gnUsername = (String)getFixture().get("username");
         gnPassword = (String)getFixture().get("password");
         
@@ -73,7 +73,7 @@ public class GeonetworkOnlineTests extends OnlineTestSupport{
     protected Properties createExampleFixture() {
         Properties sampleFixture = new Properties();
         sampleFixture.put("version", "type_2_or_3");
-        sampleFixture.put("URL", "http://localhost:8080/geonetwork");
+        sampleFixture.put("url", "http://localhost:8080/geonetwork");
         sampleFixture.put("username", "admin");
         sampleFixture.put("password", "admin");
         return sampleFixture;

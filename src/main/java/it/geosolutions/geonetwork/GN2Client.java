@@ -40,7 +40,7 @@ import it.geosolutions.geonetwork.op.GNMetadataGetVersion;
 import it.geosolutions.geonetwork.op.GNMetadataInsert;
 import it.geosolutions.geonetwork.op.GNMetadataSearch;
 import it.geosolutions.geonetwork.op.GNMetadataUpdate;
-import it.geosolutions.geonetwork.op.gn3.GN3MetadataGetInfo.MetadataInfo;
+import it.geosolutions.geonetwork.op.gn3.GN3MetadataGetInfo;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
 import it.geosolutions.geonetwork.util.GNSearchRequest;
@@ -154,15 +154,15 @@ public class GN2Client extends GNAbstractClient {
     }
 
     @Override
-    public MetadataInfo getInfo(Long id)
+    public GN3MetadataGetInfo.MetadataInfo getInfo(Long id)
             throws GNLibException, GNServerException {
-        throw new IllegalStateException("Operation not implemented yet, supported only for GeoNetwork 4");
+        throw new UnsupportedOperationException("Operation supported only for GeoNetwork 3");
     }
 
     @Override
-    public it.geosolutions.geonetwork.op.gn3.GN3MetadataGetInfo.MetadataInfo getInfo(String uuid)
+    public GN3MetadataGetInfo.MetadataInfo getInfo(String uuid)
             throws GNLibException, GNServerException {
-        throw new IllegalStateException("Operation not implemented yet, supported only for GeoNetwork 4");
+        throw new UnsupportedOperationException("Operation supported only for GeoNetwork 3");
     }
     
     /** *****************************
@@ -192,7 +192,7 @@ public class GN2Client extends GNAbstractClient {
      * See http://trac.osgeo.org/geonetwork/ticket/1062
      */
     @Deprecated
-    public it.geosolutions.geonetwork.op.GNMetadataGetInfo.MetadataInfo getInfo(Long id, boolean forUpdate) throws GNLibException, GNServerException {
+    public GNMetadataGetInfo.MetadataInfo getInfo(Long id, boolean forUpdate) throws GNLibException, GNServerException {
         return GNMetadataGetInfo.get(connection, gnServiceURL, id, forUpdate);
     }
     
@@ -204,7 +204,7 @@ public class GN2Client extends GNAbstractClient {
      * See http://trac.osgeo.org/geonetwork/ticket/1062
      */
     @Deprecated
-    public it.geosolutions.geonetwork.op.GNMetadataGetInfo.MetadataInfo getInfo(String uuid, boolean forUpdate) throws GNLibException, GNServerException {
+    public GNMetadataGetInfo.MetadataInfo getInfo(String uuid, boolean forUpdate) throws GNLibException, GNServerException {
         return GNMetadataGetInfo.get(connection, gnServiceURL, uuid, forUpdate);
     }
     

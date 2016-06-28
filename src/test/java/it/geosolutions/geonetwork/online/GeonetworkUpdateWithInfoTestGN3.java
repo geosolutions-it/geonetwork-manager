@@ -49,6 +49,7 @@ import it.geosolutions.geonetwork.op.gn3.GN3MetadataGetInfo.MetadataInfo;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNPriv;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
+import org.junit.Assume;
 
 /**
  *
@@ -85,10 +86,9 @@ public class GeonetworkUpdateWithInfoTestGN3 extends GeonetworkTest {
         try{
             info = client.getInfo(id);
         }
-        catch(IllegalStateException ise){
-            assertEquals("Operation not implemented yet, supported only for GeoNetwork 4", ise.getMessage());
-            assertTrue(true);
-            return;
+        catch(UnsupportedOperationException e){
+            assertEquals("Operation supported only for GeoNetwork 3", e.getMessage());
+            Assume.assumeTrue("Operation supported only for GeoNetwork 3", false);
         }
         assertEquals(id, info.getId());
         assertEquals("a1157d96-c02d-4751-ab1d-63aabf6a7d15",info.getSource());

@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2016 GeoSolutions S.A.S.
+ *  Copyright (C) 2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,13 +29,13 @@ import org.junit.Test;
 import it.geosolutions.geonetwork.GN2Client;
 import it.geosolutions.geonetwork.GN3Client;
 import it.geosolutions.geonetwork.GNClient;
-import junit.framework.Assert;
+import static junit.framework.Assert.*;
 
 /**
 *
 * @author DamianoG (damiano.giampaoli at geo-solutions.it)
 */
-public class GNClientCreationTest extends Assert{
+public class GNClientCreationTest {
 
     @Test
     public void constructorTest(){

@@ -24,8 +24,6 @@
  */
 package it.geosolutions.geonetwork.online;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.EnumSet;
@@ -39,7 +37,8 @@ import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNPriv;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
 import it.geosolutions.geonetwork.util.GNSearchRequest;
-import it.geosolutions.geonetwork.util.GNSearchResponse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -78,7 +77,7 @@ public class GeonetworkInsertTest extends GeonetworkTest {
         
         GNSearchRequest searchRequest = new GNSearchRequest();
         searchRequest.addParam(GNSearchRequest.Param.title, getTitleElement(md).getText());
-        asyncSearchAssertEquals(0, client, searchRequest);
+        delayedSearchAssertEquals(0, client, searchRequest);
     }
 
     @Test
@@ -98,7 +97,7 @@ public class GeonetworkInsertTest extends GeonetworkTest {
         
         GNSearchRequest searchRequest = new GNSearchRequest();
         searchRequest.addParam(GNSearchRequest.Param.title, getTitleElement(md).getText());
-        asyncSearchAssertEquals(0, client, searchRequest);
+        delayedSearchAssertEquals(0, client, searchRequest);
     }
 
     @Test

@@ -24,7 +24,6 @@
  */
 package it.geosolutions.geonetwork.online;
 
-import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +33,6 @@ import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import it.geosolutions.geonetwork.GNClient;
@@ -44,6 +42,7 @@ import it.geosolutions.geonetwork.exception.GNServerException;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNSearchRequest;
 import it.geosolutions.geonetwork.util.GNSearchResponse;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -68,7 +67,7 @@ public class GeonetworkSearchTest extends GeonetworkTest {
             GNSearchRequest searchRequest = new GNSearchRequest();
             GNSearchResponse searchResponse = client.search(searchRequest);
 //            assertEquals(12, searchResponse.getCount());
-            asyncSearchAssertEquals(12, client, searchRequest);
+            delayedSearchAssertEquals(12, client, searchRequest);
         }
 
         {
@@ -76,14 +75,14 @@ public class GeonetworkSearchTest extends GeonetworkTest {
             searchRequest.addParam(GNSearchRequest.Param.title, "test0");
             GNSearchResponse searchResponse = client.search(searchRequest);
 //            assertEquals(2, searchResponse.getCount());
-            asyncSearchAssertEquals(2, client, searchRequest);
+            delayedSearchAssertEquals(2, client, searchRequest);
         }
         {
             GNSearchRequest searchRequest = new GNSearchRequest();
             searchRequest.addParam(GNSearchRequest.Param.title, "ACK00");
             GNSearchResponse searchResponse = client.search(searchRequest);
 //            assertEquals(5, searchResponse.getCount());
-            asyncSearchAssertEquals(5, client, searchRequest);
+            delayedSearchAssertEquals(5, client, searchRequest);
         }
 
         {
@@ -96,7 +95,7 @@ public class GeonetworkSearchTest extends GeonetworkTest {
             FileUtils.writeStringToFile(tempFile, outputter.outputString(request));
 //            GNSearchResponse searchResponse = client.search(tempFile);
 //            assertEquals(7, searchResponse.getCount());
-            asyncSearchAssertEquals(7, client, tempFile);
+            delayedSearchAssertEquals(7, client, tempFile);
         }
     }
 

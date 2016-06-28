@@ -24,8 +24,6 @@
  */
 package it.geosolutions.geonetwork.online;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -46,6 +44,8 @@ import it.geosolutions.geonetwork.exception.GNServerException;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNSearchRequest;
 import it.geosolutions.geonetwork.util.GNSearchResponse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -101,27 +101,33 @@ public abstract class GeonetworkTest extends GeonetworkOnlineTests{
         }
 
         // check that the catalog is really empty
-        asyncSearchAssertEquals(0, client, searchRequest);
+        GeonetworkTest.this.delayedSearchAssertEquals(0, client, searchRequest);
 //        searchResponse = client.search(searchRequest);
 //        assertEquals(0,searchResponse.getCount());
         LOGGER.info("All metadata removed successfully");
     }
 
-    protected void asyncSearchAssertEquals(int expected, GNClient client, GNSearchRequest searchRequest) throws GNLibException, GNServerException {
-        asyncSearchAssertEquals(expected, client, searchRequest, null);
+    protected void delayedSearchAssertEquals(int expected, GNClient client, GNSearchRequest searchRequest) throws GNLibException, GNServerException {
+        GeonetworkTest.this.delayedSearchAssertEquals(expected, client, searchRequest, null);
     }
 
-    protected void asyncSearchAssertEquals(int expected, GNClient client, File searchRequest) throws GNLibException, GNServerException {
-        asyncSearchAssertEquals(expected, client, null, searchRequest);
+    protected void delayedSearchAssertEquals(int expected, GNClient client, File searchRequest) throws GNLibException, GNServerException {
+        GeonetworkTest.this.delayedSearchAssertEquals(expected, client, null, searchRequest);
     }
 
-    private void asyncSearchAssertEquals(int expected, GNClient client, GNSearchRequest searchRequest, File file) throws GNLibException, GNServerException {
+    /**
+     * Searches in GN3 may not return the expected number of records, since GN performs an async indexing.
+     *
+     * If GN is not returning the expected number of records, we'll try and repeat the search a few times.
+     */
+    private void delayedSearchAssertEquals(int expected, GNClient client, GNSearchRequest searchRequest, File file) throws GNLibException, GNServerException {
 
-        final int MAXLOOP = 10;
+        final int MAX_RETRIES = 10;
+        final int WAIT_MSEC = 1000;
 
         GNSearchResponse searchResponse = null;
 
-        for (int i = 0; i < MAXLOOP; i++) {
+        for (int i = 0; i < MAX_RETRIES; i++) {
 
             searchResponse = 
                     searchRequest != null ? client.search(searchRequest) :
@@ -133,13 +139,13 @@ public abstract class GeonetworkTest extends GeonetworkOnlineTests{
                 return;
             }
 
-            LOGGER.info("search failed ("+searchResponse.getCount()+"!="+expected+"), retrying...");
+            LOGGER.info("search failed (got:"+searchResponse.getCount()+" != exp:"+expected+"), retrying in "+WAIT_MSEC+" ms...");
             try {
-                Thread.sleep(1000);
+                Thread.sleep(WAIT_MSEC);
             } catch (InterruptedException ex) {
             }
         }
-        fail("Expected value " + expected + " not confirmed after " + MAXLOOP + " tries. Found " + searchResponse.getCount());
+        fail("Expected value " + expected + " not found after " + MAX_RETRIES + " retries. Found " + searchResponse.getCount());
     }
     
     protected GNInsertConfiguration createDefaultInsertConfiguration() {
