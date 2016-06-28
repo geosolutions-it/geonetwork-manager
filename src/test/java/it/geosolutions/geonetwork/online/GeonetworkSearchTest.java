@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,24 +22,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geonetwork;
+package it.geosolutions.geonetwork.online;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
+import org.jdom.Element;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import it.geosolutions.geonetwork.GNClient;
 import it.geosolutions.geonetwork.exception.GNException;
 import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNSearchRequest;
 import it.geosolutions.geonetwork.util.GNSearchResponse;
-import java.io.File;
-import java.io.IOException;
-import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
-import org.jdom.Element;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Ignore;
 
 /**
  *
@@ -53,10 +57,8 @@ public class GeonetworkSearchTest extends GeonetworkTest {
     }
 
     @Test
-    @Ignore
     public void testSearchMetadata() throws GNException, IOException {
-        if(!runIntegrationTest())
-            return;
+        
         removeAllMetadata();
 
         GNClient client = createClientAndCheckConnection();
@@ -133,9 +135,8 @@ public class GeonetworkSearchTest extends GeonetworkTest {
     }
 
     @Test
-    @Ignore
+    //@Ignore
     public void testEmptySearch() throws Exception {
-        if( ! runIntegrationTest() ) return;
 
         GNClient client = createClientAndCheckConnection();
         GNSearchRequest searchRequest = new GNSearchRequest();

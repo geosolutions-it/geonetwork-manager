@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2012 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,144 +22,54 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package it.geosolutions.geonetwork;
 
-import it.geosolutions.geonetwork.op.GNMetadataAdmin;
-import it.geosolutions.geonetwork.op.GNLogin;
-import it.geosolutions.geonetwork.op.GNMetadataInsert;
+import java.io.File;
+
+import org.jdom.Element;
+
 import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
-import it.geosolutions.geonetwork.op.GNInfo;
-import it.geosolutions.geonetwork.op.GNMetadataDelete;
-import it.geosolutions.geonetwork.op.GNMetadataGet;
-import it.geosolutions.geonetwork.op.GNMetadataGetInfo;
-import it.geosolutions.geonetwork.op.GNMetadataGetInfo.MetadataInfo;
-import it.geosolutions.geonetwork.op.GNMetadataGetVersion;
-import it.geosolutions.geonetwork.op.GNMetadataSearch;
-import it.geosolutions.geonetwork.op.GNMetadataUpdate;
+import it.geosolutions.geonetwork.op.gn3.GN3MetadataGetInfo.MetadataInfo;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
 import it.geosolutions.geonetwork.util.GNSearchRequest;
 import it.geosolutions.geonetwork.util.GNSearchResponse;
 import it.geosolutions.geonetwork.util.HTTPUtils;
 
-import java.io.File;
-import org.apache.log4j.Logger;
-import org.jdom.Element;
-
-
 /**
- * Facade for the various GN operations
- * 
- * @author ETj (etj at geo-solutions.it)
- */
-public class GNClient {
-        
-    private final static Logger LOGGER = Logger.getLogger(GNClient.class);
+* Facade for the various GN operations
+*  
+* @author DamianoG (damiano.giampaoli at geo-solutions.it)
+*/
+public interface GNClient {
 
-    // create stateful connection handler (we need the cookies)
-    private HTTPUtils connection;
+    boolean ping();
 
-    private final String gnServiceURL;
+    long insertMetadata(GNInsertConfiguration cfg, File metadataFile) throws GNLibException, GNServerException;
 
-    public GNClient(String serviceURL) {
-        this.gnServiceURL = serviceURL;
-        connection = new HTTPUtils();
-    }
+    long insertRequest(File requestFile) throws GNLibException, GNServerException;
 
-    public GNClient(String serviceURL, String username, String password) {
-        this.gnServiceURL = serviceURL;
-        connection = new HTTPUtils(username, password);
-    }
+    void setPrivileges(long metadataId, GNPrivConfiguration cfg) throws GNLibException, GNServerException;
 
-    public boolean ping() {
-        return GNInfo.ping(connection, gnServiceURL);
-    }
+    GNSearchResponse search(GNSearchRequest searchRequest) throws GNLibException, GNServerException;
 
-    /**
-     * Kept for backward compatibility
-     */
-    public boolean login(String username, String password) {
-        LOGGER.error("Login operation is no longer supported. Please use authenticated constructor");
-        return false;
-    }
+    GNSearchResponse search(File fileRequest) throws GNLibException, GNServerException;
 
-    /**
-     * Facade for {@link GNMetadataInsert#insertMetadata(HTTPUtils, String, File, GNInsertConfiguration)}
-     */
-    public long insertMetadata(GNInsertConfiguration cfg, File metadataFile) throws GNLibException, GNServerException {
-        return GNMetadataInsert.insertMetadata(connection, gnServiceURL, metadataFile, cfg);
-    }
+    Element get(Long id) throws GNLibException, GNServerException;
 
-    /**
-     * Facade for {@link GNMetadataInsert#insertRequest((HTTPUtils connection, String gnServiceURL, File inputFile))}
-     */
-    public long insertRequest(File requestFile) throws GNLibException, GNServerException {
-        return GNMetadataInsert.insertRequest(connection, gnServiceURL, requestFile);
-    }
+    Element get(String uuid) throws GNLibException, GNServerException;
 
-    /**
-     * Facade for {@link GNMetadataAdmin#setPriv(it.geosolutions.geonetwork.util.HTTPUtils, java.lang.String, long, it.geosolutions.geonetwork.util.GNPrivConfiguration) }
-     */
-    public void setPrivileges(long metadataId, GNPrivConfiguration cfg) throws GNLibException, GNServerException {
-        GNMetadataAdmin.setPriv(connection, gnServiceURL, metadataId, cfg);
-    }
+    public void deleteMetadata(long id) throws GNLibException, GNServerException;
 
-    public GNSearchResponse search(GNSearchRequest searchRequest) throws GNLibException, GNServerException {
-        return GNMetadataSearch.search(connection, gnServiceURL, searchRequest);
-    }
-
-    public GNSearchResponse search(File fileRequest) throws GNLibException, GNServerException {
-        return GNMetadataSearch.search(connection, gnServiceURL, fileRequest);
-    }
-
-    public Element get(Long id) throws GNLibException, GNServerException {
-        return GNMetadataGet.get(connection, gnServiceURL, id);
-    }
-
-    public Element get(String uuid) throws GNLibException, GNServerException {
-        return GNMetadataGet.get(connection, gnServiceURL, uuid);
-    }
-
-    public void deleteMetadata(long id) throws GNLibException, GNServerException {
-        GNMetadataDelete.delete(connection, gnServiceURL, id);
-    }
+    void updateMetadata(long id, File metadataFile) throws GNLibException, GNServerException;
     
-    public void updateMetadata(long id, File metadataFile, String encoding) throws GNLibException, GNServerException {
-        String version = GNMetadataGetVersion.get(connection, gnServiceURL, id);
-        GNMetadataUpdate.update(connection, gnServiceURL, id, version, metadataFile, encoding);
-    }
+    public void updateMetadata(long id, File metadataFile, String encoding) throws GNLibException, GNServerException;
 
-    public void updateMetadata(long id, int version, File metadataFile, String encoding) throws GNLibException, GNServerException {
-        GNMetadataUpdate.update(connection, gnServiceURL, id, Integer.toString(version), metadataFile, encoding);
-    }
-    
-    public void updateMetadata(long id, File metadataFile) throws GNLibException, GNServerException {
-        updateMetadata(id, metadataFile, null);
-    }
+    MetadataInfo getInfo(Long id) throws GNLibException, GNServerException;
 
-    public void updateMetadata(long id, int version, File metadataFile) throws GNLibException, GNServerException {
-    	updateMetadata(id, version, metadataFile, null);
-    }
+    MetadataInfo getInfo(String uuid) throws GNLibException, GNServerException;
 
-    /**
-     * Uses the custom service xml.metadata.info.get.
-     * See http://trac.osgeo.org/geonetwork/ticket/1062
-     */
-    public MetadataInfo getInfo(Long id, boolean forUpdate) throws GNLibException, GNServerException {
-        return GNMetadataGetInfo.get(connection, gnServiceURL, id, forUpdate);
-    }
-    /**
-     * Uses the custom service xml.metadata.info.get.
-     * See http://trac.osgeo.org/geonetwork/ticket/1062
-     */
-    public MetadataInfo getInfo(String uuid, boolean forUpdate) throws GNLibException, GNServerException {
-        return GNMetadataGetInfo.get(connection, gnServiceURL, uuid, forUpdate);
-    }
-
-    //==========================================================================
-    
-    protected HTTPUtils getConnection() {
-        return connection;
-    }
+    HTTPUtils getConnection();
 }
