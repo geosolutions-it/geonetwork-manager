@@ -1,3 +1,6 @@
+
+## GeoNetwork Manager
+
 **geonetwork-manager** is a Java library to interact with [GeoNetwork Opensource](http://geonetwork-opensource.org/). 
 Its aim is to provide a simple Java interface to create, delete, administer the catalog entries programmatically.
 
@@ -12,7 +15,16 @@ The currently **supported operations** are:
 * delete metadata
 * change metadata permissions
 
-## Use the library
+## Compatibility
+
+The latest version (1.4) supports both GN2.10 and GN3.
+
+Version 1.3 moved compatibility from the older GN2.6 and GN2.8 to GN2.10, which introduced a new authorization mechanism and some differences in the services URLs. If you need to talk to a GN2.10, you'd better use the newer 1.4 version.
+
+Version 1.2 supported GN2.6 and GN2.8.
+
+
+## Using the library
 
 In order to use the **geonetwork-manager** library you can add it as a dependency in your [maven](https://maven.apache.org/) project:
 
@@ -32,76 +44,19 @@ using the [GeoSolutions](http://www.geo-solutions.it/) maven repository:
 
 If you need, you can download the `.jar` files for any available version from [here](http://maven.geo-solutions.it/it/geosolutions/geonetwork-manager/).
 
-## Build the library
 
-Clone the geonetwork-manager repo
-
-```
-~$ git clone git@github.com:geosolutions-it/geonetwork-manager.git
-```
-
-then from the root dir of the cloned repository, run
-
-```
-~/geonetwork-manager$ mvn clean install
-```
-
-## Usage
+## Doc and examples
 
 Follow the wiki instructions to [add geonetwork-manager as a dependency](https://github.com/geosolutions-it/geonetwork-manager/wiki#working-with-maven)
 in your project and see some [code usage examples](https://github.com/geosolutions-it/geonetwork-manager/wiki/Examples).
 
 
-## Online tests
+## Mailing list for users 
+The mailing list for the project is located here:
 
-In order to run the geonetwork-manager **online test suite**, a running geonetwork test instance is required.
-The tests are destructive, so **DO NOT** use a production instance with a real metadata catalog otherwise the stored metadata will be lost.
+<https://groups.google.com/group/geonetwork-manager-users>
 
-By default, only unit tests are executed in the build process. 
-The online test suite uses the [geotools Test Data module](http://docs.geotools.org/latest/developer/conventions/test/data.html).
 
-The test framework looks for a **fixture** (.properties) file in the **home directory of the user** in order to gather all the connection
-parameters required to connect to the GeoNetowrk test instance.
+## License
 
-* If the **fixture** file **is found**, the online tests suite is executed. If the connection parameters reported are wrong all the tests will fail.
-* If the **fixture** file **is NOT found**, the test framework will create a template fixture file with a fake ``.sample`` extension.
-* If only the **template fixture** file **is found**, the test suite is skipped.
-
-#### Where can I find the sample fixture file?
-
-As said above, the location of the fixture file is under the home folder of the OS user in the (hidden) directory
-``.geotools/geonetwork-manager`` and the name of the file is ``params.properties``.
-
-During the first run of the tests the subdirectories and a template file are automatically created in order to simplify the process.
-
-If the OS is **win7** and user is called **geosolutions** the generated directories/file will be
-
-```
-C:\Users\geosolutions\.geotools\geonetwork-manager\params.properties.example
-```
-
-On **Linux**
-
-```
-/home/geosolutions/.geotools/geonetwork-manager/params.properties.example
-```
-
-#### How to run the online test suite
-
-1. Startup, remotely or locally, a GeoNetwork `2.10` or `3.0.x` test instance
-1. Run the test for the first time via maven or eclipse
-1. Edit the template fixture file generated and change the `url`, `version`, `username`, and `password` fields with the information related to the test instance
-1. `version` should be either `2` or `3`
-1. Rename the fixture file removing the ``.example`` suffix
-1. Run the tests again; this time the online tests will be executed and reported as junit tests.
-
-The template fixture file content will look like this:
-
-```
-#This is an example fixture. Update the values and remove the .example suffix to enable the test
-#Mon Jun 27 14:27:21 CEST 2016
-url=http\://localhost\:8080/geonetwork
-version=type_2_or_3
-password=admin
-username=admin
-```
+GeoNetwork-Manager is open source and licensed under the [MIT License](http://en.wikipedia.org/wiki/MIT_License).
