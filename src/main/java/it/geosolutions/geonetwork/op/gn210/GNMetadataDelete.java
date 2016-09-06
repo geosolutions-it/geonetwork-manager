@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2016 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geonetwork.op.gn3;
+package it.geosolutions.geonetwork.op.gn210;
 
 import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
@@ -37,62 +37,49 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 /**
- * The metadata.admin service updates the operations allowed for a metadata
- * with the list of operations allowed send in the parameters,
- * deleting all the operations allowed assigned previously.
- * 
- * @author DamianoG (damiano.giampaoli at geo-solutions.it)
+ * The metadata.delete service allows to remove a metadata record from the catalog.
+ * The metadata content is backup in MEF format by default in data\removed folder.
+ *
+ * @see http://geonetwork-opensource.org/manuals/2.6.3/developer/xml_services/metadata_xml_services.html#delete-metadata-metadata-delete
+ *
+ * @author ETj (etj at geo-solutions.it)
  */
-public class GN3MetadataAdmin {
+public class GNMetadataDelete {
         
-    private final static Logger LOGGER = Logger.getLogger(GN3MetadataAdmin.class);
+    private final static Logger LOGGER = Logger.getLogger(GNMetadataDelete.class);
 
-    public static void setPriv(HTTPUtils connection, String gnServiceURL, long metadataId, GNPrivConfiguration cfg) throws GNLibException, GNServerException {
+    public static void delete(HTTPUtils connection, String gnServiceURL, long metadataId) throws GNLibException, GNServerException {
         if(LOGGER.isDebugEnabled())
-            LOGGER.debug("Setting privileges on md#" + metadataId);
-        Element adminRequest = buildAdminRequest(metadataId, cfg);
-        gnAdminMetadata(connection, gnServiceURL, adminRequest);
+            LOGGER.debug("Deleting md#" + metadataId);
+        Element idRequest = buildIdRequest(metadataId);
+        gnDeleteMetadata(connection, gnServiceURL, idRequest);
         if(LOGGER.isInfoEnabled())
-            LOGGER.info("Set privileges for " + cfg.getPrivileges().size() + " groups on md#" + metadataId);
+            LOGGER.info("Deleted md#" + metadataId);
     }
     
     /**
      * 
      * @see {@link http://geonetwork-opensource.org/latest/developers/xml_services/metadata_xml_services.html#update-operations-allowed-for-a-metadata-metadata-admin }
      */
-    private static Element buildAdminRequest(long metadataId, GNPrivConfiguration cfg) throws GNLibException {
+    private static Element buildIdRequest(long metadataId) throws GNLibException {
         if(LOGGER.isDebugEnabled()) 
-            LOGGER.debug("Compiling admin request document");
+            LOGGER.debug("Compiling id request document");
                 
         Element request = new Element("request");
         request.addContent(new Element("id").setText(Long.toString(metadataId)));
-        for (GNPrivConfiguration.Privileges grant : cfg.getPrivileges()) {
-            Integer groupId = grant.getGroup();
-            String ops = grant.getOps();
-            for (char c : "012345".toCharArray()) {
-                if(ops.indexOf(c)!=-1) {
-                    String op = new StringBuilder()
-                            .append('_').append(groupId)
-                            .append('_').append(c)
-                            .toString();
-                    request.addContent(new Element(op).setText("on"));
-                }
-            }
-        }
                     
         return request;
     }
-
     
-    private static void gnAdminMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNServerException {
+    private static void gnDeleteMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNServerException {
 
-        String serviceURL = baseURL + "/srv/eng/md.privileges";
-        gnPut(connection, serviceURL, gnRequest);
+        String serviceURL = baseURL + "/srv/eng/xml.metadata.delete";
+        gnPost(connection, serviceURL, gnRequest);
         if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
-            throw new GNServerException("Error setting metadata privileges in GeoNetwork");
+            throw new GNServerException("Error deleting metadata in GeoNetwork");
     }
     
-    private static String gnPut(HTTPUtils connection, String serviceURL, final Element gnRequest) {
+    private static String gnPost(HTTPUtils connection, String serviceURL, final Element gnRequest) {
         
         final XMLOutputter outputter = new XMLOutputter(Format.getCompactFormat());
         String s = outputter.outputString(gnRequest);

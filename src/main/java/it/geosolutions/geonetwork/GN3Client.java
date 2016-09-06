@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2016 GeoSolutions S.A.S.
+ *  Copyright (C) 2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,11 +32,11 @@ import org.jdom.Element;
 
 import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
-import it.geosolutions.geonetwork.op.GNInfo;
-import it.geosolutions.geonetwork.op.GNMetadataDelete;
-import it.geosolutions.geonetwork.op.GNMetadataGet;
-import it.geosolutions.geonetwork.op.GNMetadataInsert;
-import it.geosolutions.geonetwork.op.GNMetadataSearch;
+import it.geosolutions.geonetwork.op.gn210.GNInfo;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataDelete;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataGet;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataInsert;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataSearch;
 import it.geosolutions.geonetwork.op.gn3.GN3MetadataAdmin;
 import it.geosolutions.geonetwork.op.gn3.GN3MetadataGetInfo;
 import it.geosolutions.geonetwork.op.gn3.GN3MetadataGetInfo.MetadataInfo;

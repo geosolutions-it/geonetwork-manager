@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2016 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2012 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geonetwork.op.gn3;
+package it.geosolutions.geonetwork.op.gn210.custom;
 
 import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
@@ -36,30 +36,32 @@ import org.apache.log4j.Logger;
 
 import org.jdom.Element;
 import org.jdom.JDOMException;
-import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
 
 /**
  * Get some info (id, uuid, version number) for a given Metadata.
  * <br/><br/>
+ * This operation uses a custom GN service that retrieves id, uuid of a metadata,
+ * and asks for a new version number.
+ *
+ * See http://trac.osgeo.org/geonetwork/ticket/1062
+ *
+ * If your GN instance does not implement the xmlk.metadata.info.getForUpdate service,
+ * please use the {@link GNMetadataGetVersion} operation.
  * 
- * @author DamianoG (damiano.giampaoli at geo-solutions.it)
+ * @author ETj (etj at geo-solutions.it)
  */
 
-public class GN3MetadataGetInfo {
+public class GNMetadataGetStatus {
 
-    private final static Logger LOGGER = Logger.getLogger(GN3MetadataGetInfo.class);
+    private final static Logger LOGGER = Logger.getLogger(GNMetadataGetStatus.class);
 
 
     public static class MetadataInfo {
         long id;
         String uuid;
-        String schema;
-        String createDate;
-        String changeDate;
-        String source;
-        String category;
-        
+        Integer version;
+
         public long getId() {
             return id;
         }
@@ -68,24 +70,11 @@ public class GN3MetadataGetInfo {
             return uuid;
         }
 
-        public String getSchema() {
-            return schema;
-        }
-
-        public String getCreateDate() {
-            return createDate;
-        }
-
-        public String getChangeDate() {
-            return changeDate;
-        }
-
-        public String getSource() {
-            return source;
-        }
-
-        public String getCategory() {
-            return category;
+        /**
+         * @return the updated version number, or null if update was not requested.
+         */
+        public Integer getVersion() {
+            return version;
         }
 
         @Override
@@ -93,29 +82,26 @@ public class GN3MetadataGetInfo {
             return "MetadataInfo[" 
                     + "id=" + id
                     + ", uuid=" + uuid
-                    + ", schema=" + schema
-                    + ", createDate=" + createDate
-                    + ", changeDate=" + changeDate
-                    + ", source=" + source
-                    + ", category=" + category
+                    + (version != null? ", version=" + version : "")
                     + ']';
         }
     }
+            
 
-    public static MetadataInfo get(HTTPUtils connection, String gnServiceURL, Long id) throws GNLibException, GNServerException {
-        return getAux(connection, gnServiceURL, "_id="+id);
+    public static MetadataInfo get(HTTPUtils connection, String gnServiceURL, Long id, boolean forUpdate) throws GNLibException, GNServerException {
+        return getAux(connection, gnServiceURL, "id="+id, forUpdate);
     }
-    public static MetadataInfo get(HTTPUtils connection, String gnServiceURL, String uuid) throws GNLibException, GNServerException {
-        return getAux(connection, gnServiceURL, "uuid="+uuid);
+    public static MetadataInfo get(HTTPUtils connection, String gnServiceURL, String uuid, boolean forUpdate) throws GNLibException, GNServerException {
+        return getAux(connection, gnServiceURL, "uuid="+uuid, forUpdate);
     }
 
-    protected static MetadataInfo getAux(HTTPUtils connection, String gnServiceURL, String queryId) throws GNLibException, GNServerException {
+    protected static MetadataInfo getAux(HTTPUtils connection, String gnServiceURL, String queryId, boolean forUpdate) throws GNLibException, GNServerException {
         try {
             if(LOGGER.isDebugEnabled())
                 LOGGER.debug("Retrieve metadata info for " + queryId);
 
-            String serviceName = "q";
-            String serviceURL = gnServiceURL + "/srv/eng/"+serviceName+"?"+queryId;
+            String serviceName = forUpdate? "getForUpdate" : "get";
+            String serviceURL = gnServiceURL + "/srv/eng/xml.metadata.info."+serviceName+"?"+queryId;
             
             connection.setIgnoreResponseContentOnSuccess(false);
             String response = connection.get(serviceURL);
@@ -132,6 +118,9 @@ public class GN3MetadataGetInfo {
 
             MetadataInfo ret = parseMetadataInfo(response);
                         
+            if(LOGGER.isDebugEnabled())
+                LOGGER.debug("Metadata " + queryId + " has info " + ret);
+                        
             return ret;
         } catch (MalformedURLException ex) {
             throw new GNLibException("Bad URL", ex);
@@ -142,33 +131,18 @@ public class GN3MetadataGetInfo {
         try {
             SAXBuilder builder = new SAXBuilder();
             Element root = builder.build(new StringReader(response)).detachRootElement();
-
-            final Namespace NS_GEONET = Namespace.getNamespace("geonet","http://www.fao.org/geonetwork");
-
-            Element metadata = root.getChild("metadata");
-            if(metadata == null){
-                return null;
-            }
-
-            Element geonetinfo = metadata.getChild("info", NS_GEONET);
-            if(geonetinfo == null){
-                return null;
-            }
-            String id = geonetinfo.getChildText("id");
-            String uuid = geonetinfo.getChildText("uuid");
+                        
+            String id = root.getChildText("id");
+            String uuid = root.getChildText("uuid");
+            String sver = root.getChildText("version");
 
             MetadataInfo info = new MetadataInfo();
             info.id = Long.parseLong(id);
             info.uuid = uuid;
-            info.createDate = geonetinfo.getChildText("createDate");
-            info.changeDate= geonetinfo.getChildText("changeDate");
-            info.source = geonetinfo.getChildText("source");
-            info.category = geonetinfo.getChildText("category");
-            info.schema = geonetinfo.getChildText("schema");
-            
-            if(LOGGER.isDebugEnabled())
-                LOGGER.debug("metadata info: '" + info.toString());
-            
+
+            if(sver!=null && ! sver.isEmpty())
+                info.version = Integer.parseInt(sver);
+
             return info;
                 
         } catch (JDOMException ex) {

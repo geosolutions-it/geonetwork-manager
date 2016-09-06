@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2016 GeoSolutions S.A.S.
+ *  Copyright (C) 2007-2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,35 +22,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package it.geosolutions.geonetwork.op.gn210;
 
-package it.geosolutions.geonetwork;
-
-import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.util.HTTPUtils;
 
+import org.apache.log4j.Logger;
+
+
 /**
- * 
- * @author DamianoG (damiano.giampaoli at geo-solutions.it)
+ * Perform a GN login.
+ *
+ * This call is deprecated since gn 2.10.
+ *
+ * @author ETj (etj at geo-solutions.it)
  */
-public abstract class GNAbstractClient implements GNClient{
+public class GNLogin {
+    
+    private final static Logger LOGGER = Logger.getLogger(GNLogin.class);
 
-    // create stateful connection handler (we need the cookies)
-    protected HTTPUtils connection;
+    public static boolean login(HTTPUtils connection, String serviceURL, String username, String password) {
 
-    protected final String gnServiceURL;
-    
-    protected GNAbstractClient(String serviceURL){
-        this.gnServiceURL = serviceURL;
-        connection = new HTTPUtils();
-    }
-    
-    protected GNAbstractClient(String serviceURL, String username, String password) {
-        this.gnServiceURL = serviceURL;
-        connection = new HTTPUtils(username, password);
-    }
-    
-    @Override
-    public HTTPUtils getConnection() throws GNLibException {
-        return connection;
+        throw new UnsupportedOperationException("Login operation is no longer supported");
     }
 }

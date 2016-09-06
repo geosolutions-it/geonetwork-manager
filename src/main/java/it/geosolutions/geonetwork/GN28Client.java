@@ -25,32 +25,22 @@
 
 package it.geosolutions.geonetwork;
 
-import it.geosolutions.geonetwork.exception.GNLibException;
-import it.geosolutions.geonetwork.util.HTTPUtils;
+import org.apache.log4j.Logger;
+import it.geosolutions.geonetwork.util.GNVersion;
 
 /**
- * 
- * @author DamianoG (damiano.giampaoli at geo-solutions.it)
+ * @author ETj (etj at geo-solutions.it)
  */
-public abstract class GNAbstractClient implements GNClient{
+public class GN28Client extends GN2xClient
+{
+    private final static Logger LOGGER = Logger.getLogger(GN28Client.class);
 
-    // create stateful connection handler (we need the cookies)
-    protected HTTPUtils connection;
+    public GN28Client(String serviceURL) {
+        this(serviceURL, null, null);
+    }
 
-    protected final String gnServiceURL;
-    
-    protected GNAbstractClient(String serviceURL){
-        this.gnServiceURL = serviceURL;
-        connection = new HTTPUtils();
+    public GN28Client(String serviceURL, String username, String password) {
+        super(GNVersion.V28, serviceURL, username, password);
     }
-    
-    protected GNAbstractClient(String serviceURL, String username, String password) {
-        this.gnServiceURL = serviceURL;
-        connection = new HTTPUtils(username, password);
-    }
-    
-    @Override
-    public HTTPUtils getConnection() throws GNLibException {
-        return connection;
-    }
+
 }

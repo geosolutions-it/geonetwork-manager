@@ -31,15 +31,15 @@ import org.jdom.Element;
 
 import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
-import it.geosolutions.geonetwork.op.GNInfo;
-import it.geosolutions.geonetwork.op.GNMetadataAdmin;
-import it.geosolutions.geonetwork.op.GNMetadataDelete;
-import it.geosolutions.geonetwork.op.GNMetadataGet;
-import it.geosolutions.geonetwork.op.GNMetadataGetInfo;
-import it.geosolutions.geonetwork.op.GNMetadataGetVersion;
-import it.geosolutions.geonetwork.op.GNMetadataInsert;
-import it.geosolutions.geonetwork.op.GNMetadataSearch;
-import it.geosolutions.geonetwork.op.GNMetadataUpdate;
+import it.geosolutions.geonetwork.op.gn210.GNInfo;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataAdmin;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataDelete;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataGet;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataGetInfo;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataGetVersion;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataInsert;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataSearch;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataUpdate;
 import it.geosolutions.geonetwork.op.gn3.GN3MetadataGetInfo;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
@@ -52,16 +52,16 @@ import it.geosolutions.geonetwork.util.GNSearchResponse;
  * @author ETj (etj at geo-solutions.it)
  * @author DamianoG (damiano.giampaoli at geo-solutions.it)
  */
-public class GN2Client extends GNAbstractClient {
+public class GN210Client extends GNAbstractClient {
         
-    private final static Logger LOGGER = Logger.getLogger(GN2Client.class);
+    private final static Logger LOGGER = Logger.getLogger(GN210Client.class);
 
-    public GN2Client(String serviceURL) {
+    public GN210Client(String serviceURL) {
         super(serviceURL);
         LOGGER.info("A Geonetwork2 client successfully instantiated!");
     }
 
-    public GN2Client(String serviceURL, String username, String password) {
+    public GN210Client(String serviceURL, String username, String password) {
         super(serviceURL, username, password);
         LOGGER.info("A Geonetwork2 client successfully instantiated!");
     }

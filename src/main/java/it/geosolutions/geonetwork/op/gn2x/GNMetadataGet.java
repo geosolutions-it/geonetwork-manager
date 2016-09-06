@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007-2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,10 +22,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geonetwork.op;
+
+package it.geosolutions.geonetwork.op.gn2x;
 
 import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
+import it.geosolutions.geonetwork.util.GNVersion;
 import it.geosolutions.geonetwork.util.HTTPUtils;
 import java.io.StringReader;
 
@@ -39,60 +41,93 @@ import org.jdom.output.XMLOutputter;
 
 /**
  * The xml.metadata.get service can be used to retrieve a metadata record stored in GeoNetwork.
- * 
+ *
  * @author ETj (etj at geo-solutions.it)
  */
-public class GNMetadataGet {
-        
+public class GNMetadataGet
+{
     private final static Logger LOGGER = Logger.getLogger(GNMetadataGet.class);
 
-    public static Element get(HTTPUtils connection, String gnServiceURL, Long id) throws GNLibException, GNServerException {
-        if(LOGGER.isDebugEnabled())
-            LOGGER.debug("Retrieve metadata #"+id);
+    private final GNVersion version;
+
+    public static final GNMetadataGet V26 = new GNMetadataGet(GNVersion.V26);
+    public static final GNMetadataGet V28 = new GNMetadataGet(GNVersion.V28);
+
+    public static GNMetadataGet get(GNVersion v) {
+        switch (v) {
+            case V26:
+                return V26;
+            case V28:
+                return V28;
+            default:
+                throw new IllegalStateException("Bad version requested " + v);
+        }
+    }
+
+    private String getLang() {
+        return version == GNVersion.V26 ? "en" : "eng";
+    }
+
+    private GNMetadataGet(GNVersion v) {
+        this.version = v;
+    }
+
+    public Element get(HTTPUtils connection, String gnServiceURL, Long id) throws GNLibException, GNServerException
+    {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Retrieve metadata #" + id);
+        }
         return get(connection, gnServiceURL, id, null);
     }
 
-    public static Element get(HTTPUtils connection, String gnServiceURL, String uuid) throws GNLibException, GNServerException {
-        if(LOGGER.isDebugEnabled())
-            LOGGER.debug("Retrieve metadata "+ uuid);
+    public Element get(HTTPUtils connection, String gnServiceURL, String uuid) throws GNLibException, GNServerException
+    {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Retrieve metadata " + uuid);
+        }
         return get(connection, gnServiceURL, null, uuid);
     }
-    
-    protected static Element get(HTTPUtils connection, String gnServiceURL, Long id, String uuid) throws GNLibException, GNServerException {
+
+    protected Element get(HTTPUtils connection, String gnServiceURL, Long id, String uuid) throws GNLibException, GNServerException
+    {
         Element request = buildRequest(id, uuid);
         String response = gnGetMetadata(connection, gnServiceURL, request);
         Element eResponse = parse(response);
         return eResponse;
     }
 
-    protected static Element buildRequest(Long id, String uuid) {
+    protected static Element buildRequest(Long id, String uuid)
+    {
         Element request = new Element("request");
-        if(id != null)
+        if (id != null) {
             request.addContent(new Element("id").setText(String.valueOf(id)));
-        else if(uuid != null)
+        } else if (uuid != null) {
             request.addContent(new Element("uuid").setText(uuid));
+        }
         return request;
     }
 
-    private static String gnGetMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNServerException {
-
-        String serviceURL = baseURL + "/srv/eng/xml.metadata.get";
+    private String gnGetMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNServerException
+    {
+        String serviceURL = baseURL + "/srv/"+getLang()+"/xml.metadata.get";
         String resp = gnPost(connection, serviceURL, gnRequest);
-        if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
+        if (connection.getLastHttpStatus() != HttpStatus.SC_OK) {
             throw new GNServerException("Error retrieving metadata in GeoNetwork");
+        }
         return resp;
     }
-    
-    private static String gnPost(HTTPUtils connection, String serviceURL, final Element gnRequest) {
-        
+
+    private static String gnPost(HTTPUtils connection, String serviceURL, final Element gnRequest)
+    {
         final XMLOutputter outputter = new XMLOutputter(Format.getCompactFormat());
         String xmlReq = outputter.outputString(gnRequest);
-        
+
         connection.setIgnoreResponseContentOnSuccess(false);
         return connection.postXml(serviceURL, xmlReq);
     }
 
-    private static Element parse(String s) throws GNLibException {
+    private static Element parse(String s) throws GNLibException
+    {
         try {
             SAXBuilder builder = new SAXBuilder();
             return builder.build(new StringReader(s)).detachRootElement();

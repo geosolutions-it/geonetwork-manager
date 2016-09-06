@@ -42,12 +42,13 @@ import org.junit.Test;
 
 import it.geosolutions.geonetwork.GNClient;
 import it.geosolutions.geonetwork.exception.GNServerException;
-import it.geosolutions.geonetwork.op.GNMetadataGetInfo;
-import it.geosolutions.geonetwork.op.GNMetadataGetInfo.MetadataInfo;
-import it.geosolutions.geonetwork.op.GNMetadataUpdate;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataGetInfo;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataGetInfo.MetadataInfo;
+import it.geosolutions.geonetwork.op.gn210.GNMetadataUpdate;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNPriv;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
+import it.geosolutions.geonetwork.util.GNSearchRequest;
 
 /**
  *
@@ -55,15 +56,15 @@ import it.geosolutions.geonetwork.util.GNPrivConfiguration;
  */
 public class GeonetworkUpdateWithInfoTest extends GeonetworkTest {
     private final static Logger LOGGER = Logger.getLogger(GeonetworkUpdateWithInfoTest.class);
-    
+
     public GeonetworkUpdateWithInfoTest() {
     }
 
-    
+
     @Test
     //@Ignore
     public void testUpdateMetadata() throws Exception {
-        
+
         GNInsertConfiguration cfg = createDefaultInsertConfiguration();
 
         GNPrivConfiguration pcfg = new GNPrivConfiguration();
@@ -84,82 +85,85 @@ public class GeonetworkUpdateWithInfoTest extends GeonetworkTest {
         //=== using the custom service
         MetadataInfo info = null;
 
-        // first try: the service is installed?
         try {
-            info = GNMetadataGetInfo.get(client.getConnection(), gnServiceURL, id, false);
-            LOGGER.info("Basic metadataInfo by id is " + info);
+            // first try: the service is installed?
+            try {
+                info = GNMetadataGetInfo.get(client.getConnection(), gnServiceURL, id, false);
+                LOGGER.info("Basic metadataInfo by id is " + info);
+                assertNotNull(info);
+                assertNull(info.getVersion());
+                assertEquals(id, info.getId());
+            } catch (GNServerException ex) {
+                //It looks like geonetwork return 403 in case of service is not found...
+                if(ex.getHttpCode() == 404 || ex.getHttpCode() == 403) {
+                    LOGGER.error("metadata.info.get is not installed on GeoNetwork 2. Skipping test.");
+                    assumeTrue(true);
+                    return;
+                } else
+                    throw new Exception("Unexpected code " + ex.getHttpCode(), ex);
+            } catch (Exception ex) {
+                LOGGER.error("metadata.info.get doesn't work on GeoNetwork 3. Skipping test...");
+                assumeTrue(true);
+                return;
+
+            }
+
+            info = GNMetadataGetInfo.get(client.getConnection(), gnServiceURL, info.getUuid(), false);
+            LOGGER.info("Basic metadataInfo by UUID is " + info);
             assertNotNull(info);
             assertNull(info.getVersion());
             assertEquals(id, info.getId());
-        } catch (GNServerException ex) {
-            //It looks like geonetwork return 403 in case of service is not found...
-            if(ex.getHttpCode() == 404 || ex.getHttpCode() == 403) {
-                LOGGER.error("metadata.info.get is not installed on GeoNetwork 2. Skipping test.");
-                assumeTrue(true);
-                return;
-            } else
-                throw new Exception("Unexpected code " + ex.getHttpCode(), ex);
-        } catch (Exception ex) {
-            LOGGER.error("metadata.info.get doesn't work on GeoNetwork 3. Skipping test...");
-            assumeTrue(true);
-            return;
-           
+
+            info = GNMetadataGetInfo.get(client.getConnection(), gnServiceURL, id, true);
+            LOGGER.info("MetadataInfo is " + info);
+
+            assertNotNull(info);
+            assertEquals(Integer.valueOf(2), info.getVersion()); // the md has just been created
+            assertEquals(id, info.getId());
+
+
+            Element md = client.get(id);
+    //        XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
+    //        outputter.output(md, System.out);
+
+            final String UPDATED_TEXT = "Updated title";
+            {
+                Element chstr = getTitleElement(md);
+                assertEquals("TEST GeoBatch Action: GeoNetwork", chstr.getText());
+                chstr.setText(UPDATED_TEXT);
+            }
+
+            File tempFile = File.createTempFile("gnm_info_update", ".xml");
+            FileUtils.forceDeleteOnExit(tempFile);
+            XMLOutputter fileOutputter = new XMLOutputter(Format.getCompactFormat());
+            FileUtils.writeStringToFile(tempFile, fileOutputter.outputString(md));
+
+            GNMetadataUpdate.update(client.getConnection(), gnServiceURL, id, Integer.toString(info.getVersion()), tempFile, null);
+
+            {
+                Element md2 = client.get(id);
+                Element chstr = getTitleElement(md2);
+                assertEquals(UPDATED_TEXT, chstr.getText());
+            }
+
+            info = GNMetadataGetInfo.get(client.getConnection(), gnServiceURL, id, true);
+    //        String version3 = GNMetadataGetVersion.get(client.getConnection(), gnServiceURL, id);
+            LOGGER.info("New MetadataInfo is " + info);
+
+            assertNotNull(info.getVersion());
+            assertEquals(Integer.valueOf(4), info.getVersion()); // the md has been updated once
+
+
+            // try bad version number
+            try {
+                GNMetadataUpdate.update(client.getConnection(), gnServiceURL, id, "9999", tempFile, null);
+                fail("Bad version exception not trapped");
+            } catch(GNServerException e) {
+                LOGGER.info("Bad version number error trapped properly ("+e.getMessage()+")");
+            }
+        } finally {
+            delayedSearchAssertEquals(1, client, new GNSearchRequest()); // this query ensures the record(s) will be deleted on next removeAll() query
         }
-        
-        info = GNMetadataGetInfo.get(client.getConnection(), gnServiceURL, info.getUuid(), false);
-        LOGGER.info("Basic metadataInfo by UUID is " + info);
-        assertNotNull(info);
-        assertNull(info.getVersion());
-        assertEquals(id, info.getId());
-
-        info = GNMetadataGetInfo.get(client.getConnection(), gnServiceURL, id, true);
-        LOGGER.info("MetadataInfo is " + info);
-                
-        assertNotNull(info);
-        assertEquals(Integer.valueOf(2), info.getVersion()); // the md has just been created
-        assertEquals(id, info.getId());
-
-
-        Element md = client.get(id);
-//        XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-//        outputter.output(md, System.out);
-
-        final String UPDATED_TEXT = "Updated title";
-        {
-            Element chstr = getTitleElement(md);        
-            assertEquals("TEST GeoBatch Action: GeoNetwork", chstr.getText());
-            chstr.setText(UPDATED_TEXT);
-        }
-        
-        File tempFile = File.createTempFile("gnm_info_update", ".xml");
-        FileUtils.forceDeleteOnExit(tempFile);
-        XMLOutputter fileOutputter = new XMLOutputter(Format.getCompactFormat());
-        FileUtils.writeStringToFile(tempFile, fileOutputter.outputString(md));
-        
-        GNMetadataUpdate.update(client.getConnection(), gnServiceURL, id, Integer.toString(info.getVersion()), tempFile, null);
-        
-        {
-            Element md2 = client.get(id);
-            Element chstr = getTitleElement(md2);        
-            assertEquals(UPDATED_TEXT, chstr.getText());            
-        }
-
-        info = GNMetadataGetInfo.get(client.getConnection(), gnServiceURL, id, true);
-//        String version3 = GNMetadataGetVersion.get(client.getConnection(), gnServiceURL, id);
-        LOGGER.info("New MetadataInfo is " + info);
-                
-        assertNotNull(info.getVersion());
-        assertEquals(Integer.valueOf(4), info.getVersion()); // the md has been updated once
-        
-        
-        // try bad version number
-        try {
-            GNMetadataUpdate.update(client.getConnection(), gnServiceURL, id, "9999", tempFile, null);
-            fail("Bad version exception not trapped");
-        } catch(GNServerException e) {
-            LOGGER.info("Bad version number error trapped properly ("+e.getMessage()+")");
-        }
-                
 //        client.deleteMetadata(id);
     }
 }

@@ -71,5 +71,5 @@ public interface GNClient {
 
     MetadataInfo getInfo(String uuid) throws GNLibException, GNServerException;
 
-    HTTPUtils getConnection();
+    HTTPUtils getConnection() throws GNLibException;
 }

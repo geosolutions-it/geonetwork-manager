@@ -26,9 +26,10 @@ package it.geosolutions.geonetwork.unit;
 
 import org.junit.Test;
 
-import it.geosolutions.geonetwork.GN2Client;
+import it.geosolutions.geonetwork.GN210Client;
 import it.geosolutions.geonetwork.GN3Client;
 import it.geosolutions.geonetwork.GNClient;
+import it.geosolutions.geonetwork.exception.GNLibException;
 import static junit.framework.Assert.*;
 
 /**
@@ -38,12 +39,12 @@ import static junit.framework.Assert.*;
 public class GNClientCreationTest {
 
     @Test
-    public void constructorTest(){
-        GNClient gnClient = new GN2Client("http://testurl1.com");
+    public void constructorTest() throws GNLibException {
+        GNClient gnClient = new GN210Client("http://testurl1.com");
         assertNotNull(gnClient.getConnection());
         gnClient = new GN3Client("http://testurl2.com");
         assertNotNull(gnClient.getConnection());
-        gnClient = new GN2Client("http://testurl3.com","usr","pswd");
+        gnClient = new GN210Client("http://testurl3.com","usr","pswd");
         assertNotNull(gnClient.getConnection());
         gnClient = new GN3Client("http://testurl4.com","usr","pswd");
         assertNotNull(gnClient.getConnection());

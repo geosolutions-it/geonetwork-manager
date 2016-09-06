@@ -22,8 +22,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geonetwork.op;
+package it.geosolutions.geonetwork.op.gn2x.custom;
 
+import it.geosolutions.geonetwork.op.gn210.*;
 import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
 import it.geosolutions.geonetwork.util.HTTPUtils;
@@ -52,9 +53,10 @@ import org.jdom.input.SAXBuilder;
  * @author ETj (etj at geo-solutions.it)
  */
 
-public class GNMetadataGetStatus {
+@Deprecated
+public class GNMetadataGetInfo {
 
-    private final static Logger LOGGER = Logger.getLogger(GNMetadataGetStatus.class);
+    private final static Logger LOGGER = Logger.getLogger(GNMetadataGetInfo.class);
 
 
     public static class MetadataInfo {
@@ -88,50 +90,59 @@ public class GNMetadataGetStatus {
     }
             
 
-    public static MetadataInfo get(HTTPUtils connection, String gnServiceURL, Long id, boolean forUpdate) throws GNLibException, GNServerException {
-        return getAux(connection, gnServiceURL, "id="+id, forUpdate);
-    }
-    public static MetadataInfo get(HTTPUtils connection, String gnServiceURL, String uuid, boolean forUpdate) throws GNLibException, GNServerException {
-        return getAux(connection, gnServiceURL, "uuid="+uuid, forUpdate);
+    public static MetadataInfo get(HTTPUtils connection, String gnServiceURL, Long id, boolean forUpdate) throws GNLibException, GNServerException
+    {
+        return getAux(connection, gnServiceURL, "id=" + id, forUpdate);
     }
 
-    protected static MetadataInfo getAux(HTTPUtils connection, String gnServiceURL, String queryId, boolean forUpdate) throws GNLibException, GNServerException {
+    public static MetadataInfo get(HTTPUtils connection, String gnServiceURL, String uuid, boolean forUpdate) throws GNLibException, GNServerException
+    {
+        return getAux(connection, gnServiceURL, "uuid=" + uuid, forUpdate);
+    }
+
+    protected static MetadataInfo getAux(HTTPUtils connection, String gnServiceURL, String queryId, boolean forUpdate) throws GNLibException, GNServerException
+    {
         try {
-            if(LOGGER.isDebugEnabled())
+            if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Retrieve metadata info for " + queryId);
+            }
 
-            String serviceName = forUpdate? "getForUpdate" : "get";
-            String serviceURL = gnServiceURL + "/srv/eng/xml.metadata.info."+serviceName+"?"+queryId;
-            
+            String serviceName = forUpdate ? "getForUpdate" : "get";
+            String serviceURL = gnServiceURL + "/srv/en/xml.metadata.info." + serviceName + "?" + queryId;
+
             connection.setIgnoreResponseContentOnSuccess(false);
             String response = connection.get(serviceURL);
 
-            if(LOGGER.isDebugEnabled()) {
-                if(response != null)
+            if (LOGGER.isDebugEnabled()) {
+                if (response != null) {
                     LOGGER.debug("Response is " + response.length() + " chars long");
-                else
+                } else {
                     LOGGER.debug("Response is null");
+                }
             }
-            
-            if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
+
+            if (connection.getLastHttpStatus() != HttpStatus.SC_OK) {
                 throw new GNServerException("Error retrieving data in GeoNetwork", connection.getLastHttpStatus());
+            }
 
             MetadataInfo ret = parseMetadataInfo(response);
-                        
-            if(LOGGER.isDebugEnabled())
+
+            if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Metadata " + queryId + " has info " + ret);
-                        
+            }
+
             return ret;
         } catch (MalformedURLException ex) {
             throw new GNLibException("Bad URL", ex);
         }
     }
-    
-    private static MetadataInfo parseMetadataInfo(String response) throws GNLibException {
+
+    private static MetadataInfo parseMetadataInfo(String response) throws GNLibException
+    {
         try {
             SAXBuilder builder = new SAXBuilder();
             Element root = builder.build(new StringReader(response)).detachRootElement();
-                        
+
             String id = root.getChildText("id");
             String uuid = root.getChildText("uuid");
             String sver = root.getChildText("version");
@@ -140,17 +151,18 @@ public class GNMetadataGetStatus {
             info.id = Long.parseLong(id);
             info.uuid = uuid;
 
-            if(sver!=null && ! sver.isEmpty())
+            if (sver != null && !sver.isEmpty()) {
                 info.version = Integer.parseInt(sver);
+            }
 
             return info;
-                
+
         } catch (JDOMException ex) {
             LOGGER.error("Error parsing GN response: " + response);
             throw new GNLibException("Error parsing GN response: " + ex.getMessage(), ex);
         } catch (IOException ex) {
             throw new GNLibException("Error while outputting", ex);
-        } catch(NumberFormatException ex) {
+        } catch (NumberFormatException ex) {
             LOGGER.error("Error parsing number in GN response: " + response);
             throw new GNLibException("Error parsing number in GN response: " + ex.getMessage(), ex);
         }

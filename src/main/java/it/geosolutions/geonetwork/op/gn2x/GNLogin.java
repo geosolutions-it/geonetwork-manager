@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007-2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,8 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geonetwork.op;
 
+package it.geosolutions.geonetwork.op.gn2x;
+
+
+import it.geosolutions.geonetwork.util.GNVersion;
 import it.geosolutions.geonetwork.util.HTTPUtils;
 
 import org.apache.commons.httpclient.HttpStatus;
@@ -55,19 +58,48 @@ import org.jdom.output.XMLOutputter;
 public class GNLogin {
     
     private final static Logger LOGGER = Logger.getLogger(GNLogin.class);
+    
+    private final GNVersion version;
+
+    public static final GNLogin V26 = new GNLogin(GNVersion.V26);
+    public static final GNLogin V28 = new GNLogin(GNVersion.V28);
+
+    public static GNLogin get(GNVersion v) {
+        switch (v) {
+            case V26:
+                return V26;
+            case V28:
+                return V28;
+            default:
+                throw new IllegalStateException("Bad version requested " + v);
+        }
+    }
+
+    private String getLang() {
+        return version == GNVersion.V26 ? "en" : "eng";
+    }
+
+    private GNLogin(GNVersion v) {
+        this.version = v;
+    }
 
      /*
      * @return true if login was successful
      * 
      * @see <a href="http://geonetwork-opensource.org/manuals/trunk/developer/xml_services/login_xml_services.html#login-services" >GeoNetwork documentation about login</a>
      */
-    public static boolean login(HTTPUtils connection, String serviceURL, String username, String password) {
+    public boolean login(HTTPUtils connection, String serviceURL, String username, String password)
+    {
+        Element request = new Element("request");
+        request.addContent(new Element("username").setText(username));
+        request.addContent(new Element("password").setText(password));
 
-        throw new UnsupportedOperationException("Login operation is no longer supported");
-//        String loginURL = serviceURL+"/j_spring_security_check?username="+username+"&password="+password; // sigh
-//        String out = connection.post(loginURL, (String)null, null);
-//
-//
-//        return (connection.getLastHttpStatus() == 302);
+        XMLOutputter outputter = new XMLOutputter(Format.getCompactFormat());
+        String xml = outputter.outputString(request);
+
+        String loginURL = serviceURL + "/srv/"+getLang()+"/xml.user.login";
+        String out = connection.postXml(loginURL, xml);
+
+        return (connection.getLastHttpStatus() == HttpStatus.SC_OK);
     }
 }

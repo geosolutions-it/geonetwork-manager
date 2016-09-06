@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007-2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,11 +22,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geonetwork.op;
+
+package it.geosolutions.geonetwork.op.gn2x;
 
 import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
+import it.geosolutions.geonetwork.util.GNVersion;
 import it.geosolutions.geonetwork.util.HTTPUtils;
 
 import java.io.File;
@@ -50,8 +52,33 @@ import org.jdom.output.XMLOutputter;
  * 
  * @author ETj (etj at geo-solutions.it)
  */
-public class GNMetadataInsert {
+public class GNMetadataInsert
+{
     private final static Logger LOGGER = Logger.getLogger(GNMetadataInsert.class);
+
+    private final GNVersion version;
+
+    public static final GNMetadataInsert V26 = new GNMetadataInsert(GNVersion.V26);
+    public static final GNMetadataInsert V28 = new GNMetadataInsert(GNVersion.V28);
+
+    public static GNMetadataInsert get(GNVersion v) {
+        switch (v) {
+            case V26:
+                return V26;
+            case V28:
+                return V28;
+            default:
+                throw new IllegalStateException("Bad version requested " + v);
+        }
+    }
+
+    private String getLang() {
+        return version == GNVersion.V26 ? "en" : "eng";
+    }
+
+    private GNMetadataInsert(GNVersion v) {
+        this.version = v;
+    }
 
     /**
      * Insert a raw metadata document in GN.<br/>
@@ -59,9 +86,11 @@ public class GNMetadataInsert {
      *
      * @return the id of the new metadata entry
      */
-    public static long insertMetadata(HTTPUtils connection, String gnServiceURL, File inputFile, GNInsertConfiguration cfg)  throws GNLibException, GNServerException {
-        if(LOGGER.isInfoEnabled())
+    public long insertMetadata(HTTPUtils connection, String gnServiceURL, File inputFile, GNInsertConfiguration cfg) throws GNLibException, GNServerException
+    {
+        if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Handling pure metadata file " + inputFile);
+        }
         Element insertRequest = buildInsertRequest(inputFile, cfg);
 
         // insert the metadata
@@ -77,7 +106,7 @@ public class GNMetadataInsert {
      *
      * @return the id of the new metadata entry
      */
-    public static long insertRequest(HTTPUtils connection, String gnServiceURL, File inputFile)  throws GNLibException, GNServerException {
+    public long insertRequest(HTTPUtils connection, String gnServiceURL, File inputFile)  throws GNLibException, GNServerException {
         if(LOGGER.isInfoEnabled())
             LOGGER.info("Handling full request file " + inputFile);
         Element insertRequest = parseFile(inputFile);
@@ -152,9 +181,9 @@ public class GNMetadataInsert {
      * 
      * @see <a href="http://geonetwork-opensource.org/latest/developers/xml_services/metadata_xml_services.html#insert-metadata-metadata-insert" >GeoNetwork documentation about inserting metadata</a>
      */
-    private static long gnInsertMetadata(HTTPUtils connection, String baseURL, final Element gnRequest, String encoding) throws GNLibException, GNServerException {
+    private long gnInsertMetadata(HTTPUtils connection, String baseURL, final Element gnRequest, String encoding) throws GNLibException, GNServerException {
 
-        String serviceURL = baseURL + "/srv/eng/xml.metadata.insert";
+        String serviceURL = baseURL + "/srv/"+getLang()+"/xml.metadata.insert";
         String res = gnPut(connection, serviceURL, gnRequest, encoding);
         if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
             throw new GNServerException("Error inserting metadata in GeoNetwork (HTTP code "+connection.getLastHttpStatus()+")");
@@ -180,26 +209,28 @@ public class GNMetadataInsert {
         return res;
     }
     
-    private static Element parseFile(File file) throws GNLibException {
-        try{
-			SAXBuilder builder = new SAXBuilder();
-			Document doc = builder.build(file);
-			return  (Element)doc.getRootElement().detach();
-		} catch (Exception ex) {
-			LOGGER.warn("Error parsing input file " + file);
+    private static Element parseFile(File file) throws GNLibException
+    {
+        try {
+            SAXBuilder builder = new SAXBuilder();
+            Document doc = builder.build(file);
+            return (Element) doc.getRootElement().detach();
+        } catch (Exception ex) {
+            LOGGER.warn("Error parsing input file " + file);
             throw new GNLibException("Error parsing input file " + file, ex);
-		}
-    }    
-    
-    private static Element parse(String s) throws GNLibException {
-        try{
-			SAXBuilder builder = new SAXBuilder();
+        }
+    }
+
+    private static Element parse(String s) throws GNLibException
+    {
+        try {
+            SAXBuilder builder = new SAXBuilder();
             s = s.trim();
-			Document doc = builder.build(new StringReader(s));
-			return  (Element)doc.getRootElement().detach();
-		} catch (Exception ex) {
-			LOGGER.warn("Error parsing input string: >>>" + s +"<<<");
+            Document doc = builder.build(new StringReader(s));
+            return (Element) doc.getRootElement().detach();
+        } catch (Exception ex) {
+            LOGGER.warn("Error parsing input string: >>>" + s + "<<<");
             throw new GNLibException("Error parsing input string", ex);
-		}
-    }    
+        }
+    }   
 }

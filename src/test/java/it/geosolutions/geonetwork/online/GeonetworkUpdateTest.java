@@ -39,6 +39,7 @@ import it.geosolutions.geonetwork.GNClient;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
 import it.geosolutions.geonetwork.util.GNPriv;
 import it.geosolutions.geonetwork.util.GNPrivConfiguration;
+import it.geosolutions.geonetwork.util.GNSearchRequest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -48,14 +49,14 @@ import static org.junit.Assert.assertNotNull;
  */
 public class GeonetworkUpdateTest extends GeonetworkTest {
     private final static Logger LOGGER = Logger.getLogger(GeonetworkUpdateTest.class);
-    
+
     public GeonetworkUpdateTest() {
     }
 
-    
+
     @Test
     public void testUpdateMetadata() throws Exception {
-        
+
         GNInsertConfiguration cfg = createDefaultInsertConfiguration();
 
         GNPrivConfiguration pcfg = new GNPrivConfiguration();
@@ -72,32 +73,34 @@ public class GeonetworkUpdateTest extends GeonetworkTest {
         long id = client.insertMetadata(cfg, file);
 
         client.setPrivileges(id, pcfg);
-        
+
         Element md = client.get(id);
 //        XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
 //        outputter.output(md, System.out);
 
         final String UPDATED_TEXT = "Updated title";
         {
-            Element chstr = getTitleElement(md);        
+            Element chstr = getTitleElement(md);
             assertEquals("TEST GeoBatch Action: GeoNetwork", chstr.getText());
             chstr.setText(UPDATED_TEXT);
         }
-        
+
         File tempFile = File.createTempFile("gnm_update", ".xml");
         FileUtils.forceDeleteOnExit(tempFile);
         XMLOutputter fileOutputter = new XMLOutputter(Format.getCompactFormat());
         FileUtils.writeStringToFile(tempFile, fileOutputter.outputString(md));
-        
+
         client.updateMetadata(id, tempFile);
-        
+
         {
             Element md2 = client.get(id);
-            Element chstr = getTitleElement(md2);        
-            assertEquals(UPDATED_TEXT, chstr.getText());            
+            Element chstr = getTitleElement(md2);
+            assertEquals(UPDATED_TEXT, chstr.getText());
         }
+
+        delayedSearchAssertEquals(1, client, new GNSearchRequest()); // this query ensures the record(s) will be deleted on next removeAll() query
     }
-    
+
 }
 
 

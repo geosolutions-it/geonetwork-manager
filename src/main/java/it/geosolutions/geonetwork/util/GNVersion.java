@@ -23,34 +23,31 @@
  * THE SOFTWARE.
  */
 
-package it.geosolutions.geonetwork;
-
-import it.geosolutions.geonetwork.exception.GNLibException;
-import it.geosolutions.geonetwork.util.HTTPUtils;
+package it.geosolutions.geonetwork.util;
 
 /**
- * 
- * @author DamianoG (damiano.giampaoli at geo-solutions.it)
+
+ * @author ETj (etj at geo-solutions.it)
  */
-public abstract class GNAbstractClient implements GNClient{
+public enum GNVersion
+{
+    V26(26),
+    V28(28),
+    V210(210),
+    V3(3);
 
-    // create stateful connection handler (we need the cookies)
-    protected HTTPUtils connection;
+    private final int numvalue;
 
-    protected final String gnServiceURL;
-    
-    protected GNAbstractClient(String serviceURL){
-        this.gnServiceURL = serviceURL;
-        connection = new HTTPUtils();
+    private GNVersion(int numvalue) {
+        this.numvalue = numvalue;
     }
-    
-    protected GNAbstractClient(String serviceURL, String username, String password) {
-        this.gnServiceURL = serviceURL;
-        connection = new HTTPUtils(username, password);
-    }
-    
-    @Override
-    public HTTPUtils getConnection() throws GNLibException {
-        return connection;
+
+    public static GNVersion get(int version) {
+        for (GNVersion v : GNVersion.values()) {
+            if(version == v.numvalue) {
+                return v;
+            }
+        }
+        return null;
     }
 }

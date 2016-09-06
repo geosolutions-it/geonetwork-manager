@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007-2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,12 +22,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geonetwork.op;
+
+package it.geosolutions.geonetwork.op.gn2x;
 
 import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
 import it.geosolutions.geonetwork.util.GNSearchRequest;
 import it.geosolutions.geonetwork.util.GNSearchResponse;
+import it.geosolutions.geonetwork.util.GNVersion;
 import it.geosolutions.geonetwork.util.HTTPUtils;
 import java.io.File;
 import java.io.StringReader;
@@ -46,25 +48,49 @@ import org.jdom.output.XMLOutputter;
  * 
  * @author ETj (etj at geo-solutions.it)
  */
-public class GNMetadataSearch {
-        
+public class GNMetadataSearch
+{
     private final static Logger LOGGER = Logger.getLogger(GNMetadataSearch.class);
 
-    public static GNSearchResponse search(HTTPUtils connection, String gnServiceURL, GNSearchRequest searchRequest) throws GNLibException, GNServerException {
+    private final GNVersion version;
+
+    public static final GNMetadataSearch V26 = new GNMetadataSearch(GNVersion.V26);
+    public static final GNMetadataSearch V28 = new GNMetadataSearch(GNVersion.V28);
+
+    public static GNMetadataSearch get(GNVersion v) {
+        switch (v) {
+            case V26:
+                return V26;
+            case V28:
+                return V28;
+            default:
+                throw new IllegalStateException("Bad version requested " + v);
+        }
+    }
+
+    private String getLang() {
+        return version == GNVersion.V26 ? "en" : "eng";
+    }
+
+    private GNMetadataSearch(GNVersion v) {
+        this.version = v;
+    }
+
+    public GNSearchResponse search(HTTPUtils connection, String gnServiceURL, GNSearchRequest searchRequest) throws GNLibException, GNServerException {
         if(LOGGER.isDebugEnabled())
             LOGGER.debug("Search metadata");
         Element request = searchRequest.toElement();
         return search(connection, gnServiceURL, request);
     }
 
-    public static GNSearchResponse search(HTTPUtils connection, String gnServiceURL, File fileRequest) throws GNLibException, GNServerException {
+    public GNSearchResponse search(HTTPUtils connection, String gnServiceURL, File fileRequest) throws GNLibException, GNServerException {
         if(LOGGER.isDebugEnabled())
             LOGGER.debug("Search metadata " + fileRequest);
         Element request = parseFile(fileRequest);
         return search(connection, gnServiceURL, request);
     }
 
-    private static GNSearchResponse search(HTTPUtils connection, String gnServiceURL, Element request) throws GNLibException, GNServerException {
+    private GNSearchResponse search(HTTPUtils connection, String gnServiceURL, Element request) throws GNLibException, GNServerException {
         String response = gnSearchMetadata(connection, gnServiceURL, request);
         Element eResponse = parse(response);
         GNSearchResponse searchResponse = new GNSearchResponse(eResponse);
@@ -73,25 +99,28 @@ public class GNMetadataSearch {
         return searchResponse;
     }
 
-    private static String gnSearchMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNServerException {
-
-        String serviceURL = baseURL + "/srv/eng/xml.search";
+    private String gnSearchMetadata(HTTPUtils connection, String baseURL, final Element gnRequest) throws GNServerException
+    {
+        String serviceURL = baseURL + "/srv/"+getLang()+"/xml.search";
         String resp = gnPost(connection, serviceURL, gnRequest);
-        if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
+        if (connection.getLastHttpStatus() != HttpStatus.SC_OK) {
             throw new GNServerException("Error searching metadata in GeoNetwork");
+        }
         return resp;
     }
-    
-    private static String gnPost(HTTPUtils connection, String serviceURL, final Element gnRequest) {
-        
+
+    private static String gnPost(HTTPUtils connection, String serviceURL, final Element gnRequest)
+    {
+
         final XMLOutputter outputter = new XMLOutputter(Format.getCompactFormat());
         String xmlReq = outputter.outputString(gnRequest);
-        
+
         connection.setIgnoreResponseContentOnSuccess(false);
         return connection.postXml(serviceURL, xmlReq);
     }
 
-    private static Element parse(String s) throws GNLibException {
+    private static Element parse(String s) throws GNLibException
+    {
         try {
             SAXBuilder builder = new SAXBuilder();
             return builder.build(new StringReader(s)).detachRootElement();
@@ -101,14 +130,15 @@ public class GNMetadataSearch {
         }
     }
 
-    private static Element parseFile(File file) throws GNLibException {
-        try{
-			SAXBuilder builder = new SAXBuilder();
-			Document doc = builder.build(file);
-			return  (Element)doc.getRootElement().detach();
-		} catch (Exception ex) {
-			LOGGER.warn("Error parsing input file " + file);
+    private static Element parseFile(File file) throws GNLibException
+    {
+        try {
+            SAXBuilder builder = new SAXBuilder();
+            Document doc = builder.build(file);
+            return (Element) doc.getRootElement().detach();
+        } catch (Exception ex) {
+            LOGGER.warn("Error parsing input file " + file);
             throw new GNLibException("Error parsing input file " + file, ex);
-		}
+        }
     }
 }

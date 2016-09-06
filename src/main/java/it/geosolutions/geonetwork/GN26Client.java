@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2014 GeoSolutions S.A.S.
+ *  Copyright (C) 2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,44 +22,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package it.geosolutions.geonetwork.op;
 
-import it.geosolutions.geonetwork.util.HTTPUtils;
-import java.net.MalformedURLException;
+package it.geosolutions.geonetwork;
 
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.log4j.Logger;
-
+import it.geosolutions.geonetwork.util.GNVersion;
 
 /**
- * 
  * @author ETj (etj at geo-solutions.it)
  */
-public class GNInfo {
-        
-    private final static Logger LOGGER = Logger.getLogger(GNInfo.class);
+public class GN26Client extends GN2xClient
+{
+    private final static Logger LOGGER = Logger.getLogger(GN26Client.class);
 
-    // needs authentication
-    public static boolean ping(HTTPUtils connection, String serviceURL) {
-        if(LOGGER.isDebugEnabled())
-            LOGGER.debug("PING");
-
-        connection.setIgnoreResponseContentOnSuccess(true);
-        String url = serviceURL + "/srv/eng/util.ping";
-
-        try {
-            connection.get(url);
-        } catch (MalformedURLException ex) {
-            LOGGER.error(ex.getMessage());
-            return false;
-        }
-
-        if(connection.getLastHttpStatus() != HttpStatus.SC_OK) {
-            if(LOGGER.isInfoEnabled())
-                LOGGER.info("PING failed");
-            return false;
-        }
-
-        return true;
+    public GN26Client(String serviceURL) {
+        this(serviceURL, null, null);
     }
+
+    public GN26Client(String serviceURL, String username, String password) {
+        super(GNVersion.V26, serviceURL, username, password);
+    }
+
 }

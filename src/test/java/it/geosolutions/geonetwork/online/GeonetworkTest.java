@@ -36,7 +36,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
-import it.geosolutions.geonetwork.GN2Client;
+import it.geosolutions.geonetwork.GN210Client;
+import it.geosolutions.geonetwork.GN26Client;
+import it.geosolutions.geonetwork.GN28Client;
 import it.geosolutions.geonetwork.GN3Client;
 import it.geosolutions.geonetwork.GNClient;
 import it.geosolutions.geonetwork.exception.GNLibException;
@@ -56,11 +58,11 @@ public abstract class GeonetworkTest extends GeonetworkOnlineTests{
 
     @Rule
     public TestName _testName = new TestName();
-    
+
     public GeonetworkTest() {
     }
 
-    @Before 
+    @Before
     public void setUp() throws Exception {
         LOGGER.info("====================> " + _testName.getMethodName());
         removeAllMetadata();
@@ -68,42 +70,48 @@ public abstract class GeonetworkTest extends GeonetworkOnlineTests{
 
     protected GNClient createClientAndCheckConnection() {
         GNClient client = null;
-        switch (gnVersion) {
-        case 2:
-            client = new GN2Client(gnServiceURL, gnUsername, gnPassword);
+
+        switch (gnv) {
+        case V26:
+            client = new GN26Client(gnServiceURL, gnUsername, gnPassword);
             break;
-        case 3:
+        case V28:
+            client = new GN28Client(gnServiceURL, gnUsername, gnPassword);
+            break;
+        case V210:
+            client = new GN210Client(gnServiceURL, gnUsername, gnPassword);
+            break;
+        case V3:
             client = new GN3Client(gnServiceURL, gnUsername, gnPassword);
             break;
         default:
-            client = null;
-            break;
+            fail("Unknown GN version " + gnv);
         }
+
         boolean logged = (client == null)? false : client.ping();
         assertTrue("Error pinging GN", logged);
         return client;
     }
-    
+
     /**
      * Utility method to remove all metadata in GN.
      */
     protected void removeAllMetadata() throws GNLibException, GNServerException {
         GNClient client = createClientAndCheckConnection();
 
-        GNSearchRequest searchRequest = new GNSearchRequest(); // empty fiter, all metadaat will be returned
+        GNSearchRequest searchRequest = new GNSearchRequest(); // empty filter, all metadata will be returned
         GNSearchResponse searchResponse = client.search(searchRequest);
 
         LOGGER.info("Found " + searchResponse.getCount() + " existing metadata");
+
         for (GNSearchResponse.GNMetadata metadata : searchResponse) {
-            LOGGER.info("Removing md ID:" + metadata.getId() + " UUID:" + metadata.getUUID());
+            LOGGER.info("Removing MD ID:" + metadata.getId() + " UUID:" + metadata.getUUID());
             Long id = metadata.getId();
             client.deleteMetadata(id);
         }
 
         // check that the catalog is really empty
         GeonetworkTest.this.delayedSearchAssertEquals(0, client, searchRequest);
-//        searchResponse = client.search(searchRequest);
-//        assertEquals(0,searchResponse.getCount());
         LOGGER.info("All metadata removed successfully");
     }
 
@@ -116,48 +124,58 @@ public abstract class GeonetworkTest extends GeonetworkOnlineTests{
     }
 
     /**
-     * Searches in GN3 may not return the expected number of records, since GN performs an async indexing.
+     * Searches may not return the expected number of records, since GN performs an async indexing.
      *
      * If GN is not returning the expected number of records, we'll try and repeat the search a few times.
      */
     private void delayedSearchAssertEquals(int expected, GNClient client, GNSearchRequest searchRequest, File file) throws GNLibException, GNServerException {
 
-        final int MAX_RETRIES = 10;
-        final int WAIT_MSEC = 1000;
+        final int MAX_RETRIES = 5;
+        int wait_msec = 1000;
+        int WAIT_MSEC_ADD = 1000;
+        int waited = 0;
 
         GNSearchResponse searchResponse = null;
 
         for (int i = 0; i < MAX_RETRIES; i++) {
 
-            searchResponse = 
-                    searchRequest != null ? client.search(searchRequest) :
+            searchResponse = searchRequest != null ?
+                    client.search(searchRequest) :
                     client.search(file);
+
             if( searchResponse.getCount() == expected) {
-                if(i > 0)
-                    LOGGER.info("Search count passed after " + i + " loops");
+                if(i > 0) {
+                    LOGGER.info("Search count passed after " + waited + " ms");
+                }
 
                 return;
             }
 
-            LOGGER.info("search failed (got:"+searchResponse.getCount()+" != exp:"+expected+"), retrying in "+WAIT_MSEC+" ms...");
+            LOGGER.info(_testName.getMethodName() + ": search failed (got:"+searchResponse.getCount()+" != exp:"+expected+"), retrying in "+wait_msec+" ms...");
             try {
-                Thread.sleep(WAIT_MSEC);
+                Thread.sleep(wait_msec);
+                waited += wait_msec;
+                wait_msec += WAIT_MSEC_ADD;
             } catch (InterruptedException ex) {
             }
         }
-        fail("Expected value " + expected + " not found after " + MAX_RETRIES + " retries. Found " + searchResponse.getCount());
+
+        String msg = "Expected value " + expected + " not found after " + MAX_RETRIES + " retries. Found " + searchResponse.getCount();
+
+        LOGGER.error(_testName.getMethodName() + ": " + msg);
+        fail(msg);
     }
-    
+
     protected GNInsertConfiguration createDefaultInsertConfiguration() {
         GNInsertConfiguration cfg = new GNInsertConfiguration();
-        
+
         cfg.setCategory("datasets");
         cfg.setGroup("1"); // group 1 is usually "all"
         cfg.setStyleSheet("_none_");
         cfg.setValidate(Boolean.FALSE);
         return cfg;
     }
-    
+
     protected File loadFile(String name) {
         try {
             URL url = this.getClass().getClassLoader().getResource(name);
@@ -168,13 +186,13 @@ public abstract class GeonetworkTest extends GeonetworkOnlineTests{
         } catch (URISyntaxException e) {
             LOGGER.error("Can't load file " + name + ": " + e.getMessage(), e);
             return null;
-        }    
+        }
     }
 
     protected Element getTitleElement(Element metadata) {
         //    xmlns:gmd="http://www.isotc211.org/2005/gmd"
-        //    xmlns:gco="http://www.isotc211.org/2005/gco"        
-        //            
+        //    xmlns:gco="http://www.isotc211.org/2005/gco"
+        //
         //    <gmd:identificationInfo>
         //      <gmd:MD_DataIdentification>
         //         <gmd:citation>
@@ -184,13 +202,13 @@ public abstract class GeonetworkTest extends GeonetworkOnlineTests{
         final Namespace NS_GMD = Namespace.getNamespace("gmd","http://www.isotc211.org/2005/gmd");
         final Namespace NS_GCO = Namespace.getNamespace("gco","http://www.isotc211.org/2005/gco");
 
-        Element idInfo = metadata.getChild("identificationInfo", NS_GMD);        
+        Element idInfo = metadata.getChild("identificationInfo", NS_GMD);
         Element dataId = idInfo.getChild("MD_DataIdentification", NS_GMD);
         Element cit    = dataId.getChild("citation", NS_GMD);
         Element cicit  = cit.getChild("CI_Citation", NS_GMD);
         Element title  = cicit.getChild("title", NS_GMD);
         Element chstr  = title.getChild("CharacterString", NS_GCO);
-        
+
         return chstr;
     }
 }

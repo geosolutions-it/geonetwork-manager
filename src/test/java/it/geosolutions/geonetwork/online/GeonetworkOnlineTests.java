@@ -24,6 +24,7 @@
  */
 package it.geosolutions.geonetwork.online;
 
+import it.geosolutions.geonetwork.util.GNVersion;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -40,7 +41,7 @@ public class GeonetworkOnlineTests extends OnlineTestSupport{
 
     private final static Logger LOGGER = Logger.getLogger(GeonetworkOnlineTests.class);
     
-    protected int gnVersion;
+    protected GNVersion gnv;
     protected String gnServiceURL;
     protected String gnUsername;
     protected String gnPassword;
@@ -52,10 +53,12 @@ public class GeonetworkOnlineTests extends OnlineTestSupport{
     
     @Override
     protected void connect() {
+        int gnVersion;
         String gnVersionAsString = (String)getFixture().get("version");
-        try{
+        try {
             gnVersion = Integer.parseInt(gnVersionAsString);
-            if(gnVersion != 2 && gnVersion != 3){
+            gnv = GNVersion.get(gnVersion);
+            if(gnv == null){
                 throw new IllegalArgumentException("Invalid value for the Geonetwork version. The value provided in the fixture file is: '" + gnVersionAsString + "'");
             }
         }
@@ -66,13 +69,13 @@ public class GeonetworkOnlineTests extends OnlineTestSupport{
         gnUsername = (String)getFixture().get("username");
         gnPassword = (String)getFixture().get("password");
         
-        LOGGER.info("Going to run Online tests against Geonetwork " + gnVersion);
+        LOGGER.info("Going to run Online tests against Geonetwork " + gnv);
     }
     
     @Override
     protected Properties createExampleFixture() {
         Properties sampleFixture = new Properties();
-        sampleFixture.put("version", "type_2_or_3");
+        sampleFixture.put("version", "26|28|210|3");
         sampleFixture.put("url", "http://localhost:8080/geonetwork");
         sampleFixture.put("username", "admin");
         sampleFixture.put("password", "admin");

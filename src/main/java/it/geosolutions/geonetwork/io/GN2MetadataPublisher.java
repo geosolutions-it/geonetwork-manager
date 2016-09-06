@@ -29,7 +29,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
-import it.geosolutions.geonetwork.GN2Client;
+import it.geosolutions.geonetwork.GN210Client;
 import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.exception.GNServerException;
 import it.geosolutions.geonetwork.util.GNInsertConfiguration;
@@ -63,7 +63,7 @@ public class GN2MetadataPublisher {
                 + gnUsername + "]");
 
         // Create a GeoNetwork client pointing to the GeoNetwork service
-        GN2Client client = new GN2Client(gnServiceURL);
+        GN210Client client = new GN210Client(gnServiceURL);
 
         // Perform a login into GN
         boolean logged = client.login(gnUsername, gnPassword);

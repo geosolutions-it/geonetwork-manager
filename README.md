@@ -5,6 +5,7 @@
 Its aim is to provide a simple Java interface to create, delete, administer the catalog entries programmatically.
 
 Since version 1.4 (currently on the master branch) **geonetwork-manager** is also compatible with GeoNetwork v3.0.x.
+Compatibility with GN2.6 and GN2.8 has been restored as well.
 
 The currently **supported operations** are:
 
@@ -17,9 +18,11 @@ The currently **supported operations** are:
 
 ## Compatibility
 
-The latest version (1.4) supports both GN2.10 and GN3.
+The latest version (1.4) supports GN2.6, GN2.8, GN2.10 and GN3.
 
-Version 1.3 moved compatibility from the older GN2.6 and GN2.8 to GN2.10, which introduced a new authorization mechanism and some differences in the services URLs. If you need to talk to a GN2.10, you'd better use the newer 1.4 version.
+Version 1.3 moved compatibility from the older GN2.6 and GN2.8 to GN2.10, which introduced a new authorization
+mechanism and some differences in the services URLs.
+If you need to talk to a GN2.10, you'd better use the newer 1.4 version.
 
 Version 1.2 supported GN2.6 and GN2.8.
 

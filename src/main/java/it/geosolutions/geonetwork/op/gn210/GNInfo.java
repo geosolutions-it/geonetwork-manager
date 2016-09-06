@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2016 GeoSolutions S.A.S.
+ *  Copyright (C) 2007,2014 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,35 +22,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package it.geosolutions.geonetwork.op.gn210;
 
-package it.geosolutions.geonetwork;
-
-import it.geosolutions.geonetwork.exception.GNLibException;
 import it.geosolutions.geonetwork.util.HTTPUtils;
+import java.net.MalformedURLException;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.log4j.Logger;
+
 
 /**
  * 
- * @author DamianoG (damiano.giampaoli at geo-solutions.it)
+ * @author ETj (etj at geo-solutions.it)
  */
-public abstract class GNAbstractClient implements GNClient{
+public class GNInfo {
+        
+    private final static Logger LOGGER = Logger.getLogger(GNInfo.class);
 
-    // create stateful connection handler (we need the cookies)
-    protected HTTPUtils connection;
+    // needs authentication
+    public static boolean ping(HTTPUtils connection, String serviceURL) {
+        if(LOGGER.isDebugEnabled())
+            LOGGER.debug("PING");
 
-    protected final String gnServiceURL;
-    
-    protected GNAbstractClient(String serviceURL){
-        this.gnServiceURL = serviceURL;
-        connection = new HTTPUtils();
-    }
-    
-    protected GNAbstractClient(String serviceURL, String username, String password) {
-        this.gnServiceURL = serviceURL;
-        connection = new HTTPUtils(username, password);
-    }
-    
-    @Override
-    public HTTPUtils getConnection() throws GNLibException {
-        return connection;
+        connection.setIgnoreResponseContentOnSuccess(true);
+        String url = serviceURL + "/srv/eng/util.ping";
+
+        try {
+            connection.get(url);
+        } catch (MalformedURLException ex) {
+            LOGGER.error(ex.getMessage());
+            return false;
+        }
+
+        if(connection.getLastHttpStatus() != HttpStatus.SC_OK) {
+            if(LOGGER.isInfoEnabled())
+                LOGGER.info("PING failed");
+            return false;
+        }
+
+        return true;
     }
 }
