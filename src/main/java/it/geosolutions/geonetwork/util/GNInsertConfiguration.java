@@ -1,7 +1,7 @@
 /*
  *  GeoNetwork-Manager - Simple Manager Library for GeoNetwork
  *
- *  Copyright (C) 2007,2011 GeoSolutions S.A.S.
+ *  Copyright (C) 2007-2016 GeoSolutions S.A.S.
  *  http://www.geo-solutions.it
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,8 +32,8 @@ package it.geosolutions.geonetwork.util;
     group (mandatory): Owner group identifier for metadata
     isTemplate: indicates if the metadata content is a new template or not. Default value: "n"
     title: Metadata title. Only required if isTemplate = "y"
-    category (mandatory): Metadata category. Use "_none_" value to don’t assign any category
-    styleSheet (mandatory): Stylesheet name to transform the metadata before inserting in the catalog. Use "_none_" value to don’t apply any stylesheet
+    category (mandatory): Metadata category. Use "_none_" value to not assign any category
+    styleSheet (mandatory): Stylesheet name to transform the metadata before inserting in the catalog. Use "_none_" value to not apply any stylesheet
     validate: Indicates if the metadata should be validated before inserting in the catalog. Values: on, off (default)
  * 
  * @author ETj (etj at geo-solutions.it)
@@ -45,11 +45,11 @@ public class GNInsertConfiguration {
      */    
     private String group;
     /**
-     * category (mandatory): Metadata category. Use "_none_" value to don’t assign any category
+     * category (mandatory): Metadata category. Use "_none_" value to not assign any category
      */    
     private String category;
     /**
-     * styleSheet (mandatory): Stylesheet name to transform the metadata before inserting in the catalog. Use "_none_" value to don’t apply any stylesheet
+     * styleSheet (mandatory): Stylesheet name to transform the metadata before inserting in the catalog. Use "_none_" value to not apply any stylesheet
      */    
     private String styleSheet;
     /**
@@ -109,13 +109,11 @@ public class GNInsertConfiguration {
         this.validate = validate;
     }
 
-	public String getEncoding() {
-		return encoding;
-	}
+    public String getEncoding() {
+        return encoding;
+    }
 
-	public void setEncoding(String encoding) {
-		this.encoding = encoding;
-	}    
-    
-    
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
 }
