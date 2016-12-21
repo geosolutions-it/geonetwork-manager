@@ -92,16 +92,11 @@
     </ciManagement>
 
     <distributionManagement>
-        <downloadUrl>http://maven.geo-solutions.it</downloadUrl>
         <repository>
-            <id>geosolutions</id>
-            <url>ftp://maven.geo-solutions.it/</url>
-            <uniqueVersion>false</uniqueVersion>
+            <id>maven-s3-repo</id>
+            <name>AODN Repository</name>
+            <url>s3://content.aodn.org.au/repo/maven</url>
         </repository>
-        <site>
-            <id>demo.geosolutions</id>
-            <url>scp://demo.geo-solutions.it/var/www/share/javadoc/gnman/${project.version}</url>
-        </site>
     </distributionManagement>
 
 
@@ -169,13 +164,10 @@
         <!--              Extensions settings for Deployment          -->
         <!-- ======================================================== -->
         <extensions>
-        <!--.............................................-->
-        <!--       geo-solutions (using wagon ftp)       -->
-        <!--.............................................-->
             <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ftp</artifactId>
-                <version>2.6</version>
+                <groupId>org.springframework.build</groupId>
+                <artifactId>aws-maven</artifactId>
+                <version>5.0.0.RELEASE</version>
             </extension>
         </extensions>
     </build>
