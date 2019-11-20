@@ -60,7 +60,7 @@ public class GNMetadataGetVersion {
     private final static Logger LOGGER = Logger.getLogger(GNMetadataGetVersion.class);
     
 	public static final Namespace NS_GEONET = Namespace.getNamespace("geonet", "http://www.fao.org/geonetwork");    
-	public static final Namespace NS_GMD = Namespace.getNamespace("gmd", "http://www.isotc211.org/2005/gmd");    
+	public static final Namespace NS_GMD = Namespace.getNamespace("gmd", "http://www.isotc211.org/2005/gmd");
 
     public static String get(HTTPUtils connection, String gnServiceURL, Long id) throws GNLibException, GNServerException {
         try {
@@ -71,18 +71,24 @@ public class GNMetadataGetVersion {
             
             connection.setIgnoreResponseContentOnSuccess(false);
             String response = connection.get(serviceURL);
-            if(LOGGER.isDebugEnabled())
-                LOGGER.debug("Response is " + response.length() + " chars long");
-            
-            if(connection.getLastHttpStatus() != HttpStatus.SC_OK)
-                throw new GNServerException("Error retrieving metadata in GeoNetwork");
+            if(response != null) {
+                if (LOGGER.isDebugEnabled())
+                    LOGGER.debug("Response is " + response.length() + " chars long");
 
-            String version = parseVersion(response);
-                        
-            if(LOGGER.isDebugEnabled())
-                LOGGER.debug("Metadata " + id + " has version " + version); 
-                        
-            return version;
+                if (connection.getLastHttpStatus() != HttpStatus.SC_OK)
+                    throw new GNServerException("Error retrieving metadata in GeoNetwork");
+
+                String version = parseVersion(response);
+
+                if (LOGGER.isDebugEnabled())
+                    LOGGER.debug("Metadata " + id + " has version " + version);
+                return version;
+            }
+            else {
+                if (LOGGER.isDebugEnabled())
+                    LOGGER.debug("Metadata " + id + " is returning empty version ");
+                return "";
+            }
         } catch (MalformedURLException ex) {
             throw new GNLibException("Bad URL", ex);
         }

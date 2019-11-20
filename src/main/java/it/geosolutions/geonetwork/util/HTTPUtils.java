@@ -33,10 +33,8 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
+
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
@@ -71,7 +69,7 @@ public class HTTPUtils {
      * Some apps may require application/xml, so you can set it to whatever is needed.
      */
     private String xmlContentType = "text/xml";
-    
+
     private int lastHttpStatus;
     private boolean ignoreResponseContentOnSuccess = false;
     
@@ -114,6 +112,7 @@ public class HTTPUtils {
 		try {            
             setAuth(client, url, username, pw);
 			httpMethod = new GetMethod(url);
+            httpMethod.setRequestHeader("X-XSRF-TOKEN", getXSRFToken(client, url));
 			client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
 			lastHttpStatus = client.executeMethod(httpMethod);
 			if(lastHttpStatus == HttpStatus.SC_OK) {
@@ -316,9 +315,10 @@ public class HTTPUtils {
             setAuth(client, url, username, pw);
 
 			client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
+            httpMethod.setRequestHeader("X-XSRF-TOKEN", getXSRFToken(client, url));
             if(requestEntity != null)
                 httpMethod.setRequestEntity(requestEntity);
-            
+
 			lastHttpStatus = client.executeMethod(httpMethod);
 
 			switch(lastHttpStatus) {
@@ -366,6 +366,7 @@ public class HTTPUtils {
 //            HttpClient client = new HttpClient();
             setAuth(client, url, username, pw);
             httpMethod = new DeleteMethod(url);
+            httpMethod.setRequestHeader("X-XSRF-TOKEN", getXSRFToken(client, url));
 			client.getHttpConnectionManager().getParams().setConnectionTimeout(5000);
 			lastHttpStatus = client.executeMethod(httpMethod);
 			String response = "";
@@ -409,6 +410,7 @@ public class HTTPUtils {
 //			HttpClient client = new HttpClient();
             setAuth(client, url, username, pw);
 			httpMethod = new GetMethod(url);
+            httpMethod.setRequestHeader("X-XSRF-TOKEN", getXSRFToken(client, url));
 			client.getHttpConnectionManager().getParams().setConnectionTimeout(2000);
 			lastHttpStatus = client.executeMethod(httpMethod);
             if(lastHttpStatus != HttpStatus.SC_OK) {
@@ -446,6 +448,7 @@ public class HTTPUtils {
 //			HttpClient client = new HttpClient();
             setAuth(client, url, username, pw);
 			httpMethod = new GetMethod(url);
+            httpMethod.setRequestHeader("X-XSRF-TOKEN", getXSRFToken(client, url));
 			client.getHttpConnectionManager().getParams().setConnectionTimeout(2000);
 			lastHttpStatus = client.executeMethod(httpMethod);
             switch(lastHttpStatus) {
@@ -478,6 +481,37 @@ public class HTTPUtils {
                 LOGGER.trace("Not setting credentials to access to " + url);
             }
         }
+    }
+
+    private static String getXSRFToken(HttpClient client, String url) {
+        String xsrfToken = (String) client.getParams().getParameter("X-XSRF-TOKEN");
+        if(xsrfToken == null) {
+            PostMethod httpMethod1 = null;
+            try {
+                httpMethod1 = new PostMethod(url);
+                httpMethod1.setRequestHeader("X-XSRF-TOKEN", "");
+                client.executeMethod(httpMethod1);
+                for (Header header : httpMethod1.getResponseHeaders()) {
+                    if (header.getValue().indexOf("XSRF-TOKEN=") != -1) {
+                        for (String val : header.getValue().split(";")) {
+                            if (val.indexOf("XSRF-TOKEN=") != -1) {
+                                xsrfToken = val.replace("XSRF-TOKEN=", "");
+                                client.getParams().setParameter("X-XSRF-TOKEN", xsrfToken);
+                            }
+                        }
+                    }
+                }
+
+            }
+            catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            finally {
+                if(httpMethod1 != null)
+                    httpMethod1.releaseConnection();
+            }
+        }
+        return xsrfToken;
     }
 
     protected static String getGeoNetworkErrorMessage(String msg) {

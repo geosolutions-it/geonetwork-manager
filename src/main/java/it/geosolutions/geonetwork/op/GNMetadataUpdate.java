@@ -90,7 +90,8 @@ public class GNMetadataUpdate {
         
         Element request = new Element("request");
         request.addContent(new Element("id").setText(String.valueOf(id)));
-        request.addContent(new Element("version").setText(version));
+        if(!version.isEmpty())
+            request.addContent(new Element("version").setText(version));
         request.addContent(new Element("data").addContent(cdata));                    
         return request;
     }
